@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     "cart",
     "dashboard",
     "reviews",
-    'vehicules'
+    'vehicules',
+    'missions',
+    'categories',
 ]
 
 REST_FRAMEWORK = {

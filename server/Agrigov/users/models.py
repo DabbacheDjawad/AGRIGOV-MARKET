@@ -95,6 +95,8 @@ class TransporterProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="transporter_profile")
     age = models.PositiveIntegerField()
 
+    wilaya = models.CharField(max_length=100, blank=True)
+    baladiya = models.CharField(max_length=100, blank=True)
     driver_license_image = CloudinaryField("driver_license" , folder="AGRIGOV/transporters/Permits" , transformation={"quality": "auto", "fetch_format": "auto"})
     grey_card_image = CloudinaryField("grey_card" , folder="AGRIGOV/transporters/greyCards" , transformation={"quality": "auto", "fetch_format": "auto"})
     created_at = models.DateTimeField(auto_now_add=True)

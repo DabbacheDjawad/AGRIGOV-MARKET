@@ -21,6 +21,6 @@ class IsAdmin(BasePermission):
 #         return request.user.is_authenticated and request.user.role in ["FARMER", "ADMIN"]
 
 
-# class IsTransporterOrAdmin(BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated and request.user.role in ["TRANSPORTER", "ADMIN"]
+class IsTransporterOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ["TRANSPORTER", "ADMIN"]

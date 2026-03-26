@@ -44,7 +44,7 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request.user)
         add_to_cart(cart, product, serializer.validated_data['quantity'])
 
-        return Response(CartSerializer(cart).data)
+        return Response({"message": "Item added to cart successfully"}, status=status.HTTP_200_OK)
 
     # -------------------
     # REMOVE ITEM (RESTFUL ✅)
@@ -56,7 +56,7 @@ class CartViewSet(viewsets.ViewSet):
         item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
         item.delete()
 
-        return Response(CartSerializer(cart).data)
+        return Response({"message": "Item removed from cart successfully"}, status=status.HTTP_200_OK)
 
     # -------------------
     # UPDATE QUANTITY
@@ -77,7 +77,7 @@ class CartViewSet(viewsets.ViewSet):
         item.quantity = serializer.validated_data['quantity']
         item.save()
 
-        return Response(CartSerializer(cart).data)
+        return Response({"message": "Item Updated successfully"}, status=status.HTTP_200_OK)
 
     # -------------------
     # CLEAR CART
@@ -87,4 +87,4 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request.user)
         cart.items.all().delete()
 
-        return Response(CartSerializer(cart).data)
+        return Response({"message": "A clear cart !"}, status=status.HTTP_200_OK)

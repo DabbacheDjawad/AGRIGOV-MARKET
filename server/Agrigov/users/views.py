@@ -77,7 +77,7 @@ class TransporterProfileView(generics.CreateAPIView):
 
     def get_serializer_context(self):
         return super().get_serializer_context()
-    
+
 class BuyerProfileView(generics.CreateAPIView):
     serializer_class = BuyerProfileSerializer
     permission_classes = [permissions.IsAuthenticated]

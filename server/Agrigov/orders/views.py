@@ -46,10 +46,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         orders = serializer.save()
 
-        return Response(
-            OrderSerializer(orders, many=True, context={'request': request}).data,
-            status=status.HTTP_201_CREATED
-        )
+        return Response({"message": "Order created !"}, status=status.HTTP_200_OK)
 
     # -------------------
     # CHANGE STATUS (clean)

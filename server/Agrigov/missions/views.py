@@ -64,7 +64,7 @@ class MissionCancelView(APIView):
 
     def patch(self, request, pk):
         try:
-            user = request.user  
+            user = request.user
             mission = Mission.objects.get(pk=pk, order__farm__farmer=user)
         except Mission.DoesNotExist:
             return Response({"detail": "Mission not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -75,7 +75,7 @@ class MissionCancelView(APIView):
         serializer.is_valid(raise_exception=True)
 
         mission.status = Mission.STATUS_CANCELLED
-        mission.order.status = "confirmed"  
+        mission.order.status = "confirmed"
         mission.order.save()
         mission.save()
 

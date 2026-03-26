@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import Product, ProductImage
-from categories.models import Category 
+from categories.models import Category
 from django.db import transaction
+from reviews.serializer import ReviewSerializer
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     class Meta:
@@ -9,7 +10,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ["id", "image"]
     def get_image(self, obj):
         return obj.image.url
-        
+
 from farms.models import Farm
 
 
@@ -37,7 +38,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "review_count",
             "created_at",
         ]
-        
+
 
 class CreateProductSerializer(serializers.ModelSerializer):
     images = serializers.ListField(
@@ -91,7 +92,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
             )
 
         return product
-    
+
 class UpdateProductSerializer(serializers.ModelSerializer):
     images = serializers.ListField(
         child=serializers.ImageField(),
@@ -127,9 +128,9 @@ class UpdateProductSerializer(serializers.ModelSerializer):
 
         if images is not None:
             for img in instance.images.all():
-                img.image.delete(save=False)  
+                img.image.delete(save=False)
                 img.delete()
-                
+
             for img in images:
                 ProductImage.objects.create(product=instance, image=img)
 

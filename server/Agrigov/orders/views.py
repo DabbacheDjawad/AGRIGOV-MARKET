@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Order
 from .serializers import OrderSerializer, CheckoutSerializer
-
-
+from django.http import FileResponse
+from .services.invoice_service import generate_invoice_pdf
+from .services.workflow_service import handle_invoice_generation
 class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
@@ -33,9 +34,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         return Order.objects.none()
 
-    # -------------------
-    # CHECKOUT (🔥 main feature)
-    # -------------------
+
     @action(detail=False, methods=['post'])
     def checkout(self, request):
         serializer = CheckoutSerializer(
@@ -48,9 +47,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Order created !"}, status=status.HTTP_200_OK)
 
-    # -------------------
-    # CHANGE STATUS (clean)
-    # -------------------
+
+
     @action(detail=True, methods=['patch'])
     def change_status(self, request, pk=None):
         order = self.get_object()
@@ -65,6 +63,30 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.status = new_status
         order.save()
 
+        # TRIGGER INVOICE WHEN DELIVERED
+        if new_status == "delivered":
+            handle_invoice_generation(order)
+
         return Response(
             OrderSerializer(order, context={'request': request}).data
+        )
+    
+    
+    @action(detail=True, methods=['get'])
+    def invoice(self, request, pk=None):
+        order = self.get_object()
+        user = request.user
+
+        if user.role == "BUYER" and order.buyer != user.buyer_profile:
+            return Response({"error": "Not allowed"}, status=403)
+
+        if user.role == "FARMER" and order.farm.farmer != user:
+            return Response({"error": "Not allowed"}, status=403)
+
+        pdf_buffer = generate_invoice_pdf(order)
+
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename=f"invoice_{order.id}.pdf"
         )

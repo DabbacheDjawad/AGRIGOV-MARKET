@@ -54,7 +54,11 @@ class Order(models.Model):
         if not user or not user.is_authenticated:
             return []
 
-        allowed = self.STATUS_PERMISSIONS.get(user.role, [])
+        role_allowed = self.STATUS_PERMISSIONS.get(user.role, [])
+
+        valid_transitions = self.VALID_TRANSITIONS.get(self.status, [])
+
+        allowed = [s for s in role_allowed if s in valid_transitions]
 
         if user.role == 'BUYER' and self.status != 'pending':
             allowed = [s for s in allowed if s != 'cancelled']
@@ -114,3 +118,14 @@ class OrderItem(models.Model):
         return self.product_item.unit_price * self.quantity
     
     
+class Invoice(models.Model):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="invoice"
+    )
+
+    pdf_url = models.URLField()
+    public_id = models.CharField(max_length=255) 
+
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -29,6 +29,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "title",
             "farmer_name",
             "description",
+            "season",
             "unit_price",
             "stock",
             "in_stock",
@@ -59,6 +60,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         fields = [
             "title",
             "description",
+            "season",
             "unit_price",
             "stock",
             "category",
@@ -111,6 +113,7 @@ class UpdateProductSerializer(serializers.ModelSerializer):
         fields = [
             "title",
             "description",
+            "season",
             "unit_price",
             "stock",
             "category",

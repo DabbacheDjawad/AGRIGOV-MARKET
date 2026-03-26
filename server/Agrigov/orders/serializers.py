@@ -1,19 +1,33 @@
 from rest_framework import serializers
-from .models import Order, OrderItem
+from .models import Order, OrderItem, ProductItem
 from products.serializers import ProductSerializer
 
-
+class ProductItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductItem
+        fields = [
+            "id",
+            "title",
+            "description",
+            "season",
+            "unit_price",
+            "category_name",
+        ]
+        
+        
 class OrderItemSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
+    product = ProductItemSerializer(source="product_item", read_only=True)
     total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price', 'total_price']
+        fields = ['id', 'product', 'quantity', 'total_price']
 
     def get_total_price(self, obj):
-        return obj.quantity * obj.price
-
+        if not obj.product_item:
+            return 0
+        return obj.product_item.unit_price * obj.quantity
+    
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
@@ -41,7 +55,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return []
 
 
-# 🔥 CHECKOUT SERIALIZER
+# CHECKOUT SERIALIZER
 class CheckoutSerializer(serializers.Serializer):
     cart_id = serializers.IntegerField(required=False)
 

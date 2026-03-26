@@ -16,7 +16,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = Order.objects.select_related(
             'buyer', 'farm'
         ).prefetch_related(
-            'items__product'
+            'items__product_item'
         )
 
         if user.role == 'BUYER':

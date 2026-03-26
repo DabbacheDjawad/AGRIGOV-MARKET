@@ -4,6 +4,13 @@ from cloudinary.models import CloudinaryField
 from categories.models import Category
 
 class Product(models.Model):
+    SEASON_CHOICES = [
+        ("winter", "Winter"),
+        ("spring", "Spring"),
+        ("summer", "Summer"),
+        ("autumn", "Autumn"),
+    ]
+
     farm = models.ForeignKey(
         Farm,
         on_delete=models.CASCADE,
@@ -12,7 +19,10 @@ class Product(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-
+    season = models.CharField(
+        max_length=20,
+        choices=SEASON_CHOICES,
+    )
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     in_stock = models.BooleanField(default=True)

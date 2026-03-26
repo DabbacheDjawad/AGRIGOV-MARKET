@@ -46,9 +46,7 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id}"
 
-    # -------------------
-    # STATUS LOGIC
-    # -------------------
+
     def can_transition(self, new_status):
         return new_status in self.VALID_TRANSITIONS.get(self.status, [])
 
@@ -70,19 +68,49 @@ class Order(models.Model):
         return new_status in self.get_allowed_statuses_for_user(user)
 
 
+
+class ProductItem(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="history_items"
+    )
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    season = models.CharField(max_length=20)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    category_name = models.CharField(max_length=255, null=True, blank=True)
+    product_id_original = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Snapshot of {self.title}"
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
         related_name='items'
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    product_item = models.ForeignKey(
+        ProductItem,
+        on_delete=models.CASCADE,
+        related_name='order_items',
+    )
+
     quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.product} x {self.quantity}"
+        return f"{self.product_item.title} x {self.quantity}"
 
     @property
     def total_price(self):
-        return self.price * self.quantity
+        if not self.product_item:
+            return 0  
+        return self.product_item.unit_price * self.quantity
+    
+    

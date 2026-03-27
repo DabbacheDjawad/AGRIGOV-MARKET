@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'vehicules',
     'missions',
     'categories',
+    'official_prices',
+    
 ]
 
 REST_FRAMEWORK = {

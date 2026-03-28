@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from django.db import transaction
-from .models import User, FarmerProfile, TransporterProfile, BuyerProfile
+from .models import MinistryProfile, User, FarmerProfile, TransporterProfile, BuyerProfile
 from farms.models import Farm
 from vehicules.models import Vehicle
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "username", "phone", "role", "is_verified", "created_at"]
+        fields = ["id", "email", "username", "phone", "role", "is_verified", "is_active", "created_at"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -24,9 +24,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User.objects.create_user(**validated_data, password=password)
-
+        user = User.objects.create_user(**validated_data, password=validated_data.pop("password"))
         return user
 
 
@@ -35,20 +33,11 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
-
-        user = authenticate(
-            request=self.context.get("request"),
-            email=email,
-            password=password,
-        )
-
+        user = authenticate(request=self.context.get("request"), **attrs)
         if not user:
             raise serializers.ValidationError("Invalid email or password.")
         if not user.is_active:
             raise serializers.ValidationError("User account is disabled.")
-
         attrs["user"] = user
         return attrs
 
@@ -56,25 +45,15 @@ class LoginSerializer(serializers.Serializer):
 class FarmerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = FarmerProfile
-        fields = [
-            "age",
-            "wilaya",
-            "baladiya",
-            "farm_size",
-            "address",
-            "farmer_card_image",
-            "national_id_image",
-        ]
+        fields = ["age", "wilaya", "baladiya", "farm_size", "address", "farmer_card_image", "national_id_image"]
+        read_only_fields = ["is_validated", "validated_at", "rejection_reason", "rejected_at"]
 
     def create(self, validated_data):
         user = self.context["request"].user
-
         if user.role != User.ROLE_FARMER:
             raise serializers.ValidationError("Only farmers allowed")
-
         if hasattr(user, "farmer_profile"):
             raise serializers.ValidationError("Profile already exists")
-
         return FarmerProfile.objects.create(user=user, **validated_data)
 
 
@@ -86,58 +65,112 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TransporterProfile
-        fields = [
-            "age",
-            "driver_license_image",
-            "grey_card_image",
-            "vehicle_type",
-            "vehicle_model",
-            "vehicle_year",
-            "vehicle_capacity",
-        ]
+        fields = ["age", "driver_license_image", "grey_card_image", "vehicle_type", "vehicle_model", "vehicle_year", "vehicle_capacity"]
+        read_only_fields = ["is_validated", "validated_at", "rejection_reason", "rejected_at"]
 
     def create(self, validated_data):
         user = self.context["request"].user
-
         if user.role != User.ROLE_TRANSPORTER:
             raise serializers.ValidationError("Only transporters allowed")
-
         if hasattr(user, "transporter_profile"):
             raise serializers.ValidationError("Profile already exists")
-
-        # Extract vehicle data
+        
         vehicle_data = {
             "type": validated_data.pop("vehicle_type"),
             "model": validated_data.pop("vehicle_model"),
             "year": validated_data.pop("vehicle_year"),
             "capacity": validated_data.pop("vehicle_capacity"),
         }
-
-        # Create profile
         profile = TransporterProfile.objects.create(user=user, **validated_data)
-
-        # Create first vehicle
         Vehicle.objects.create(transporter=user, **vehicle_data)
-
         return profile
-    
+
+
 class BuyerProfileSerializer(serializers.ModelSerializer):
     bussiness_license_image = serializers.ImageField(write_only=True)
 
     class Meta:
         model = BuyerProfile
-        fields = [
-            "age",
-            "bussiness_license_image",
-        ]
+        fields = ["age", "bussiness_license_image"]
+        read_only_fields = ["is_validated", "validated_at", "rejection_reason", "rejected_at"]
 
     def create(self, validated_data):
         user = self.context["request"].user
-
         if user.role != User.ROLE_BUYER:
             raise serializers.ValidationError("Only buyers allowed")
-
         if hasattr(user, "buyer_profile"):
             raise serializers.ValidationError("Profile already exists")
+        return BuyerProfile.objects.create(user=user, **validated_data)
 
-        return BuyerProfile.objects.create(user=user, **validated_data)    
+
+class MinistryProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", read_only=True)
+    role = serializers.CharField(source="user.role", read_only=True)
+    
+    class Meta:
+        model = MinistryProfile
+        fields = ["id", "user", "email", "role", "phone", "office_address", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "email", "role", "created_at", "updated_at"]
+    
+    def create(self, validated_data):
+        user = self.context["request"].user
+        if user.role != User.ROLE_ADMIN:
+            raise serializers.ValidationError("Only ministry users allowed")
+        if hasattr(user, "ministry_profile"):
+            raise serializers.ValidationError("Profile already exists")
+        return MinistryProfile.objects.create(
+            user=user,
+            phone=validated_data.get("phone", ""),
+            office_address=validated_data.get("office_address", "")
+        )
+    
+    def update(self, instance, validated_data):
+        instance.phone = validated_data.get("phone", instance.phone)
+        instance.office_address = validated_data.get("office_address", instance.office_address)
+        instance.save()
+        return instance
+
+
+# ============================================
+# USER VALIDATION SERIALIZERS (For Ministry)
+# ============================================
+
+class ValidateUserSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    
+    def validate_user_id(self, value):
+        try:
+            user = User.objects.get(id=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+        if user.role == "FARMER" and not hasattr(user, 'farmer_profile'):
+            raise serializers.ValidationError("Farmer has no profile")
+        if user.role == "TRANSPORTER" and not hasattr(user, 'transporter_profile'):
+            raise serializers.ValidationError("Transporter has no profile")
+        if user.role == "BUYER" and not hasattr(user, 'buyer_profile'):
+            raise serializers.ValidationError("Buyer has no profile")
+        return value
+
+
+class RejectUserSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    reason = serializers.CharField(max_length=500, required=True)
+    
+    def validate_user_id(self, value):
+        try:
+            user = User.objects.get(id=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+        if user.role == "FARMER" and not hasattr(user, 'farmer_profile'):
+            raise serializers.ValidationError("Farmer has no profile")
+        if user.role == "TRANSPORTER" and not hasattr(user, 'transporter_profile'):
+            raise serializers.ValidationError("Transporter has no profile")
+        if user.role == "BUYER" and not hasattr(user, 'buyer_profile'):
+            raise serializers.ValidationError("Buyer has no profile")
+        return value
+    
+    def validate_reason(self, value):
+        import html
+        return html.escape(value[:500])

@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from cloudinary.models import CloudinaryField
 
 
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -27,7 +26,6 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have role=ADMIN")
 
         return self.create_user(email, password, **extra_fields)
-
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -63,7 +61,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.email} ({self.role})"
 
 
-
 class FarmerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="farmer_profile")
 
@@ -78,10 +75,24 @@ class FarmerProfile(models.Model):
         folder="AGRIGOV/farmers/farmerCards",
         transformation={"quality": "auto", "fetch_format": "auto"},
     )
-    national_id_image = CloudinaryField("national_id" , folder="AGRIGOV/farmers/ids",
-            transformation={"quality": "auto", "fetch_format": "auto"})
+    national_id_image = CloudinaryField(
+        "national_id",
+        folder="AGRIGOV/farmers/ids",
+        transformation={"quality": "auto", "fetch_format": "auto"}
+    )
 
+    # Validation fields
     is_validated = models.BooleanField(default=False)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    validated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="validated_farmers"
+    )
+    rejection_reason = models.TextField(blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -90,26 +101,83 @@ class FarmerProfile(models.Model):
         return f"FarmerProfile - {self.user.email}"
 
 
-
 class TransporterProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="transporter_profile")
     age = models.PositiveIntegerField()
 
     wilaya = models.CharField(max_length=100, blank=True)
     baladiya = models.CharField(max_length=100, blank=True)
-    driver_license_image = CloudinaryField("driver_license" , folder="AGRIGOV/transporters/Permits" , transformation={"quality": "auto", "fetch_format": "auto"})
-    grey_card_image = CloudinaryField("grey_card" , folder="AGRIGOV/transporters/greyCards" , transformation={"quality": "auto", "fetch_format": "auto"})
+    driver_license_image = CloudinaryField(
+        "driver_license",
+        folder="AGRIGOV/transporters/Permits",
+        transformation={"quality": "auto", "fetch_format": "auto"}
+    )
+    grey_card_image = CloudinaryField(
+        "grey_card",
+        folder="AGRIGOV/transporters/greyCards",
+        transformation={"quality": "auto", "fetch_format": "auto"}
+    )
+
+    # Validation fields
+    is_validated = models.BooleanField(default=False)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    validated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="validated_transporters"
+    )
+    rejection_reason = models.TextField(blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return f"TransporterProfile - {self.user.email}"
+
 
 class BuyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="buyer_profile")
     age = models.PositiveIntegerField()
     
-    bussiness_license_image = CloudinaryField("business_license" , folder="AGRIGOV/buyers/businessLicenses" , transformation={"quality": "auto", "fetch_format": "auto"})
+    bussiness_license_image = CloudinaryField(
+        "business_license",
+        folder="AGRIGOV/buyers/businessLicenses",
+        transformation={"quality": "auto", "fetch_format": "auto"}
+    )
+
+    # Validation fields
+    is_validated = models.BooleanField(default=False)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    validated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="validated_buyers"
+    )
+    rejection_reason = models.TextField(blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return f"BuyerProfile - {self.user.email}"
+
+
+class MinistryProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="ministry_profile")
+    phone = models.CharField(max_length=20, blank=True)
+    office_address = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"MinistryProfile - {self.user.email}"
+
+    class Meta:
+        verbose_name = "Ministry Profile"
+        verbose_name_plural = "Ministry Profiles"

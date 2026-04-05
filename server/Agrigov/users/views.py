@@ -11,7 +11,6 @@ from missions.permissions import IsAdmin
 from .models import MinistryProfile, User, FarmerProfile, TransporterProfile, BuyerProfile
 from .serializers import (
     FarmerProfileSerializer,
-    MeSerializer,
     MinistryProfileSerializer,
     RegisterSerializer,
     TransporterProfileSerializer,
@@ -19,7 +18,7 @@ from .serializers import (
     LoginSerializer,
     BuyerProfileSerializer
 )
-
+# Optional: Simple logging
 logger = logging.getLogger(__name__)
 
 def get_tokens_for_user(user):
@@ -84,13 +83,13 @@ class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        serializer = MeSerializer(request.user)
-
         return Response(
             {
                 "status": "success",
                 "code": status.HTTP_200_OK,
-                "data": serializer.data
+                "data": {
+                    "user": UserSerializer(request.user).data
+                }
             },
             status=status.HTTP_200_OK
         )
@@ -623,8 +622,3 @@ class UserDetailView(generics.RetrieveAPIView):
             },
             status=status.HTTP_200_OK
         )
-        
-class AllUsersView(generics.ListAPIView):
-    permission_classes = [IsAdmin]
-    serializer_class = UserSerializer
-    queryset = User.objects.all().order_by('-created_at')

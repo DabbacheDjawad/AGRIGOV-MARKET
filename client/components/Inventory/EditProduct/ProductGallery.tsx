@@ -1,12 +1,10 @@
 import Image from 'next/image';
-import { useRef } from 'react';
 import type { ProductImage } from '@/types/ProductEdit';
 
 interface ProductGalleryCardProps {
   images:        ProductImage[];
   onEditPrimary: () => void;
-  /** Called with the selected File so the parent can track new uploads */
-  onAddImage:    (file: File, previewSrc: string) => void;
+  onAddImage:    () => void;
 }
 
 export default function ProductGalleryCard({
@@ -14,23 +12,8 @@ export default function ProductGalleryCard({
   onEditPrimary,
   onAddImage,
 }: ProductGalleryCardProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const primary = images.find((img) => img.isPrimary);
-  const thumbs  = images.filter((img) => !img.isPrimary);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const previewSrc = ev.target?.result as string;
-      onAddImage(file, previewSrc);
-    };
-    reader.readAsDataURL(file);
-    // Reset so the same file can be re-selected
-    e.target.value = "";
-  };
+  const thumb   = images.find((img) => !img.isPrimary);
 
   return (
     <section className="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-primary/10 overflow-hidden">
@@ -52,10 +35,7 @@ export default function ProductGalleryCard({
               priority
             />
           )}
-          <div
-            className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"
-            aria-hidden="true"
-          />
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" aria-hidden="true" />
           <button
             onClick={onEditPrimary}
             aria-label="Edit primary product image"
@@ -67,9 +47,9 @@ export default function ProductGalleryCard({
 
         {/* Thumbnail column */}
         <div className="col-span-1 flex flex-col gap-4">
-          {/* Existing thumbs */}
-          {thumbs.slice(0, 1).map((thumb) => (
-            <div key={thumb.id} className="flex-1 rounded-xl overflow-hidden relative min-h-28">
+          {/* Existing thumb */}
+          {thumb && (
+            <div className="flex-1 rounded-xl overflow-hidden relative min-h-28">
               <Image
                 src={thumb.src}
                 alt={thumb.alt}
@@ -77,17 +57,12 @@ export default function ProductGalleryCard({
                 sizes="100px"
                 className="object-cover"
               />
-              {thumb.file && (
-                <span className="absolute bottom-1 left-1 bg-primary text-[9px] font-black text-slate-900 px-1 rounded">
-                  NEW
-                </span>
-              )}
             </div>
-          ))}
+          )}
 
           {/* Add image slot */}
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={onAddImage}
             className="flex-1 min-h-28 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-primary hover:border-primary transition-all bg-background-light dark:bg-slate-800"
             aria-label="Add new product image"
           >
@@ -96,15 +71,6 @@ export default function ProductGalleryCard({
           </button>
         </div>
       </div>
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg"
-        className="sr-only"
-        onChange={handleFileChange}
-      />
     </section>
   );
 }

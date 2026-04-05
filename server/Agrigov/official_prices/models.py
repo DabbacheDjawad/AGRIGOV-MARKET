@@ -12,7 +12,7 @@ class OfficialPrice(models.Model):
         ('bag', 'Bag'),
     ]
 
-    product_name = models.CharField(max_length=255, db_index=True)
+    product_name = models.CharField(max_length=255, db_index=True)  # ← Global product name
 
     wilaya = models.CharField(
         max_length=100,

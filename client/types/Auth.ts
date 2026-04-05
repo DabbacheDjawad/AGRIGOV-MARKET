@@ -3,10 +3,10 @@
 export type UserRole = "FARMER" | "BUYER" | "TRANSPORTER" | "ADMIN";
 
 export const ROLE_DASHBOARD: Record<UserRole, string> = {
-  FARMER:      "/farmer/profile",
-  BUYER:       "/buyer/profile",
-  TRANSPORTER: "/Transporter/profile",
-  ADMIN:    "/Ministry/dashboard  ",
+  FARMER:      "/profile",
+  BUYER:       "/marketplace",
+  TRANSPORTER: "/Transporter/dashboard/missions",
+  ADMIN:    "/Ministry/dashboard",
 };
 
 export interface AuthUser {

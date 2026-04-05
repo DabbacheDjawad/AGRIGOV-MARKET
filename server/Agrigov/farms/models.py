@@ -5,10 +5,10 @@ User = settings.AUTH_USER_MODEL
 
 
 class Farm(models.Model):
-    farmer = models.OneToOneField(
+    farmer = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="farm"
+        related_name="farms"
     )
 
     name = models.CharField(max_length=255)

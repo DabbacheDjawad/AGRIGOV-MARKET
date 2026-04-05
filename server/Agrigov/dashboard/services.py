@@ -5,8 +5,9 @@ from django.db.models import Avg, F, Sum
 from orders.models import Order, OrderItem
 from products.models import Product
 from reviews.models import Review
-from users.models import BuyerProfile
-
+from users.models import TransporterProfile
+from official_prices.models import OfficialPrice
+from regions.services import get_region_comparison
 
 class DashboardService:
 
@@ -67,7 +68,6 @@ class DashboardService:
             },
             "recent_activity": list(recent_orders),
         }
-
     @staticmethod
     def get_buyer_dashboard(user):
         buyer = user.buyer_profile
@@ -132,11 +132,22 @@ class DashboardService:
 
     @staticmethod
     def get_admin_dashboard():
+        """National Ministry Dashboard."""
         from django.contrib.auth import get_user_model
         from django.utils import timezone
         from datetime import timedelta
 
         User = get_user_model()
+        now = timezone.now()
+        last_30_days = now - timedelta(days=30)
+
+        active_prices = OfficialPrice.objects.filter(
+            Q(valid_until__isnull=True) | Q(valid_until__gte=now),
+            valid_from__lte=now
+        )
+
+        revenue_data = Order.objects.filter(status='delivered').aggregate(total=Sum('total_price'))
+        price_stats = active_prices.aggregate(max_p=Max('max_price'), min_p=Min('min_price'))
 
         now = timezone.now()
         last_30_days = now - timedelta(days=30)

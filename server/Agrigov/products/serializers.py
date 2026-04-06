@@ -1,11 +1,35 @@
 from rest_framework import serializers
-from .models import Product, ProductImage
-from categories.models import Category
 from django.db import transaction
-from official_prices.services import validate_price, get_active_price
+
+from .models import Product, ProductImage, MinistryProduct
+from categories.models import Category
 from farms.models import Farm
 from farms.serializers import FarmSerializer
+from official_prices.services import validate_price
 
+
+# ─────────────────────────────────────────────
+#  MinistryProduct serializers
+# ─────────────────────────────────────────────
+class MinistryProductSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+
+    class Meta:
+        model = MinistryProduct
+        fields = ["id", "name", "slug", "category", "category_name", "description", "is_active"]
+        read_only_fields = ["slug"]
+
+
+class MinistryProductWriteSerializer(serializers.ModelSerializer):
+    """Used by admin for create / update."""
+    class Meta:
+        model = MinistryProduct
+        fields = ["id", "name", "category", "description", "is_active"]
+
+
+# ─────────────────────────────────────────────
+#  ProductImage
+# ─────────────────────────────────────────────
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -17,28 +41,29 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 
+# ─────────────────────────────────────────────
+#  Product – read (list / detail)
+# ─────────────────────────────────────────────
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     farmer_name = serializers.CharField(source="farm.farmer.username", read_only=True)
     farm = FarmSerializer(read_only=True)
-    category = serializers.SlugRelatedField(
-        slug_field="slug",
-        queryset=Category.objects.filter(is_active=True)
-    )
+    ministry_product = MinistryProductSerializer(read_only=True)
+    category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Product
         fields = [
             "id",
-            "title",
+            "ministry_product",
             "farm",
             "farmer_name",
+            "category_name",
             "description",
             "season",
             "unit_price",
             "stock",
             "in_stock",
-            "category",
             "images",
             "average_rating",
             "review_count",
@@ -46,34 +71,30 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
 
+# ─────────────────────────────────────────────
+#  Product – create
+# ─────────────────────────────────────────────
 class CreateProductSerializer(serializers.ModelSerializer):
     images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
-        required=False
+        required=False,
     )
 
     farm_id = serializers.IntegerField(write_only=True)
-
-    category = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.filter(is_active=True)
-    )
-
-    unit_price = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        write_only=True
+    ministry_product_id = serializers.PrimaryKeyRelatedField(
+        queryset=MinistryProduct.objects.filter(is_active=True),
+        source="ministry_product",
     )
 
     class Meta:
         model = Product
         fields = [
-            "title",
+            "ministry_product_id",
             "description",
             "season",
             "unit_price",
             "stock",
-            "category",
             "farm_id",
             "images",
         ]
@@ -82,57 +103,48 @@ class CreateProductSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
 
         if not Farm.objects.filter(id=value, farmer=user).exists():
-            raise serializers.ValidationError("Invalid farm or not yours")
-
+            raise serializers.ValidationError("Invalid farm or not yours.")
         return value
 
     def validate(self, data):
         farm_id = data.get("farm_id")
         unit_price = data.get("unit_price")
-        title = data.get("title").strip()
+        ministry_product: MinistryProduct = data.get("ministry_product")
 
         try:
             farm = Farm.objects.get(id=farm_id)
         except Farm.DoesNotExist:
-            raise serializers.ValidationError({"farm_id": "Farm not found"})
+            raise serializers.ValidationError({"farm_id": "Farm not found."})
 
         wilaya = getattr(farm, "wilaya", "") or ""
 
         is_valid, price_range, message = validate_price(
-            product_name=title,
+            ministry_product_id=ministry_product.id,
             price=unit_price,
-            wilaya=wilaya
+            wilaya=wilaya,
         )
 
-        if not price_range:
+        if price_range is None:
             raise serializers.ValidationError({
-                "title": f"No official price found for product '{title}'. Please contact the ministry."
+                "ministry_product_id": (
+                    f"No official price has been set for '{ministry_product.name}'. "
+                    "Please contact the Ministry of Agriculture."
+                )
             })
 
         if not is_valid:
-            raise serializers.ValidationError({
-                "unit_price": message
-            })
+            raise serializers.ValidationError({"unit_price": message})
 
-        # optional: attach for later use
-        data["_official_price"] = price_range
-
+        data["_farm"] = farm
         return data
 
     @transaction.atomic
     def create(self, validated_data):
         images = validated_data.pop("images", [])
-        farm_id = validated_data.pop("farm_id")
-        validated_data.pop("_official_price", None)
-        unit_price = validated_data.pop("unit_price")
+        validated_data.pop("farm_id")
+        farm = validated_data.pop("_farm")
 
-        farm = Farm.objects.get(id=farm_id)
-
-        product = Product.objects.create(
-            farm=farm,
-            unit_price=unit_price,
-            **validated_data
-        )
+        product = Product.objects.create(farm=farm, **validated_data)
 
         for img in images:
             ProductImage.objects.create(product=product, image=img)
@@ -140,49 +152,42 @@ class CreateProductSerializer(serializers.ModelSerializer):
         return product
 
 
+# ─────────────────────────────────────────────
+#  Product – update
+#  Note: ministry_product is intentionally NOT editable after creation.
+# ─────────────────────────────────────────────
 class UpdateProductSerializer(serializers.ModelSerializer):
     images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
-        required=False
-    )
-    category = serializers.SlugRelatedField(
-        slug_field="slug",
-        queryset=Category.objects.filter(is_active=True),
-        required=False
+        required=False,
     )
 
     class Meta:
         model = Product
-        fields = [
-            "title",
-            "description",
-            "season",
-            "unit_price",
-            "stock",
-            "category",
-            "images",
-        ]
+        fields = ["description", "season", "unit_price", "stock", "images"]
 
     def validate(self, data):
         product = self.instance
         unit_price = data.get("unit_price", product.unit_price)
-
         wilaya = getattr(product.farm, "wilaya", "") or ""
 
         is_valid, price_range, message = validate_price(
-                product_name=data.get("title"),  # ← Pass product name, not ID
-                price=unit_price,
-                wilaya=wilaya
+            ministry_product_id=product.ministry_product_id,
+            price=unit_price,
+            wilaya=wilaya,
+        )
+
+        if price_range is None:
+            raise serializers.ValidationError({
+                "unit_price": (
+                    f"No official price for '{product.ministry_product.name}'. "
+                    "Contact the Ministry."
                 )
+            })
 
         if not is_valid:
             raise serializers.ValidationError({"unit_price": message})
-
-        if not price_range:
-            raise serializers.ValidationError({
-                "title": f"No official price found for product '{product.title}'. Contact the ministry."
-            })
 
         return data
 
@@ -192,7 +197,6 @@ class UpdateProductSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
         instance.save()
 
         if images is not None:

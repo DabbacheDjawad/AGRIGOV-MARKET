@@ -3,37 +3,43 @@ from .models import Product
 
 
 class ProductFilter(django_filters.FilterSet):
-    # 💰 PRICE RANGE
+    # ── Price ──────────────────────────────────────────
     min_price = django_filters.NumberFilter(field_name="unit_price", lookup_expr="gte")
     max_price = django_filters.NumberFilter(field_name="unit_price", lookup_expr="lte")
 
-    # 📂 CATEGORY
+    # ── Ministry product ───────────────────────────────
+    ministry_product = django_filters.NumberFilter(field_name="ministry_product__id")
+    ministry_product_slug = django_filters.CharFilter(field_name="ministry_product__slug")
+
+    # ── Category ───────────────────────────────────────
     category = django_filters.CharFilter(field_name="category__slug")
     category_id = django_filters.NumberFilter(field_name="category__id")
 
-    # 🌱 SEASON
+    # ── Season ─────────────────────────────────────────
     season = django_filters.ChoiceFilter(choices=Product.SEASON_CHOICES)
 
-    # 📦 STOCK
+    # ── Stock ──────────────────────────────────────────
     in_stock = django_filters.BooleanFilter()
     min_stock = django_filters.NumberFilter(field_name="stock", lookup_expr="gte")
 
-    # 🚜 FARM
+    # ── Farm ───────────────────────────────────────────
     farm = django_filters.NumberFilter(field_name="farm__id")
 
-    # ⭐ RATING
+    # ── Rating ─────────────────────────────────────────
     min_rating = django_filters.NumberFilter(field_name="average_rating", lookup_expr="gte")
 
-    # 📅 DATE
+    # ── Date ───────────────────────────────────────────
     created_after = django_filters.DateFilter(field_name="created_at", lookup_expr="gte")
     created_before = django_filters.DateFilter(field_name="created_at", lookup_expr="lte")
 
-    # 🔥 CUSTOM: has images
+    # ── Has images ─────────────────────────────────────
     has_images = django_filters.BooleanFilter(method="filter_has_images")
 
     class Meta:
         model = Product
         fields = [
+            "ministry_product",
+            "ministry_product_slug",
             "category",
             "category_id",
             "season",

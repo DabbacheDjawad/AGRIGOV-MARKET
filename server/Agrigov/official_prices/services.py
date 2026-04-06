@@ -3,64 +3,65 @@ from django.db.models import Q
 from .models import OfficialPrice
 from regions.utils import get_region_from_wilaya
 
-def normalize_name(name: str) -> str:
-    return name.strip().lower()
 
-
-def get_active_price(product_name, wilaya=None):
+def get_active_price(ministry_product_id: int, wilaya: str = ""):
+    """
+    Returns the most specific active OfficialPrice for a MinistryProduct.
+    Priority: exact wilaya  >  broad region  >  national
+    """
     now = timezone.now()
     product_name = normalize_name(product_name)
 
-    queryset = OfficialPrice.objects.filter(
-        product_name__iexact=product_name,
-        valid_from__lte=now
+    base_qs = OfficialPrice.objects.filter(
+        product_id=ministry_product_id,
+        valid_from__lte=now,
     ).filter(
         Q(valid_until__isnull=True) | Q(valid_until__gte=now)
     )
 
     if wilaya:
-        # 1. Exact Wilaya match (e.g., specific price for 'Adrar')
-        regional = queryset.filter(wilaya__iexact=wilaya).first()
-        if regional:
-            return regional
-            
-        # 2. Broad Region match (e.g., fallback to 'south' price)
+        # 1. Exact wilaya match
+        exact = base_qs.filter(wilaya__iexact=wilaya).first()
+        if exact:
+            return exact
+
+        # 2. Broad region match
         region_name = get_region_from_wilaya(wilaya)
         if region_name:
-            # FIX: Filter by the 'region' field, not 'wilaya'!
-            broad_regional = queryset.filter(region__iexact=region_name, wilaya='').first()
-            if broad_regional:
-                return broad_regional
+            regional = base_qs.filter(region__iexact=region_name, wilaya="").first()
+            if regional:
+                return regional
 
-    # 3. Fallback to National price (where both are empty)
-    national = queryset.filter(wilaya='', region='').first()
-    return national
+    # 3. National fallback
+    return base_qs.filter(wilaya="", region="").first()
 
 
-def validate_price(product_name, price, wilaya=None):
-    price_range = get_active_price(product_name, wilaya)
+def validate_price(ministry_product_id: int, price, wilaya: str = ""):
+    """
+    Returns (is_valid: bool, price_range: OfficialPrice | None, message: str)
+    """
+    price_range = get_active_price(ministry_product_id, wilaya)
 
     if not price_range:
-        return False, None, f"No official price defined for '{product_name}'"
+        return False, None, "No official price defined for this product."
 
     if not (price_range.min_price <= price <= price_range.max_price):
         return False, price_range, (
             f"Price must be between {price_range.min_price} "
-            f"and {price_range.max_price} {price_range.unit}"
+            f"and {price_range.max_price} {price_range.unit}."
         )
 
-    return True, price_range, "Valid price"
+    return True, price_range, "Valid price."
 
 
-def expire_old_price(product_name, wilaya='', region=''):
-    """Sets valid_until to 'now' for the currently active price before creating a new one"""
+def expire_old_price(ministry_product_id: int, wilaya: str = "", region: str = ""):
+    """Sets valid_until=now for the active price before inserting a new one."""
     now = timezone.now()
-    active_prices = OfficialPrice.objects.filter(
-        product_name__iexact=product_name,
+    OfficialPrice.objects.filter(
+        product_id=ministry_product_id,
         wilaya=wilaya,
         region=region,
-        valid_from__lte=now
+        valid_from__lte=now,
     ).filter(
         Q(valid_until__isnull=True) | Q(valid_until__gte=now)
-    )
-    active_prices.update(valid_until=now)
+    ).update(valid_until=now)

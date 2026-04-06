@@ -80,6 +80,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+
     farm_id = serializers.IntegerField(write_only=True)
     ministry_product_id = serializers.PrimaryKeyRelatedField(
         queryset=MinistryProduct.objects.filter(is_active=True),
@@ -100,6 +101,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
     def validate_farm_id(self, value):
         user = self.context["request"].user
+
         if not Farm.objects.filter(id=value, farmer=user).exists():
             raise serializers.ValidationError("Invalid farm or not yours.")
         return value

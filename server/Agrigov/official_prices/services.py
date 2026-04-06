@@ -10,6 +10,7 @@ def get_active_price(ministry_product_id: int, wilaya: str = ""):
     Priority: exact wilaya  >  broad region  >  national
     """
     now = timezone.now()
+    product_name = normalize_name(product_name)
 
     base_qs = OfficialPrice.objects.filter(
         product_id=ministry_product_id,

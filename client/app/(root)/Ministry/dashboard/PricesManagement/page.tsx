@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import PriceManagementNavbar from "@/components/Ministry/Pricings/PriceManagementNavbar";
 import CommodityTable from "@/components/Ministry/Pricings/CommodityTable";
 import PriceAdjustmentPanel from "@/components/Ministry/Pricings/PriceAdjustmentPanel";
 import AuditLog from "@/components/Ministry/Pricings/AuditLog";
@@ -51,7 +50,7 @@ export default function PriceManagementPage() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen flex flex-col">
+    <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen flex  ">
       <main className="flex-1 py-8 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Page header + KPI mini-cards */}
         <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">

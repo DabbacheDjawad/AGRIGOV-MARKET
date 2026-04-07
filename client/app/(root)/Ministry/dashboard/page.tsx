@@ -1,21 +1,17 @@
 "use client";
 import { useState } from "react";
-import AdminSidebar from "@/components/Ministry/AdminSideBar";
-import AdminHeader from "@/components/Ministry/AdminHeader";
 import KpiCards from "@/components/Ministry/KpiCards";
 import RegionalMap from "@/components/Ministry/RegionalMap";
 import PriceRegulationPanel from "@/components/Ministry/PriceRegulationsPanel";
 import PriceTrendsChart from "@/components/Ministry/PriceTrends";
 import TransactionsTable from "@/components/Ministry/TransactionTable";
-import { adminNavItems, recentTransactions } from "@/types/Ministry";
+import { recentTransactions } from "@/types/Ministry";
 
 export default function AdminDashboardPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 antialiased h-screen flex overflow-hidden">
-      <AdminSidebar items={adminNavItems} />
-
       {/* Mobile overlay */}
       {mobileMenuOpen && (
         <div

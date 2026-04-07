@@ -6,8 +6,6 @@ export const ROLE_LINKS: Record<UserRole, { label: string; href: string }[]> = {
     {label: "Home", href: "/" },
     { label: "Dashboard", href: "/farmer/dashboard/products" },
     { label: "Profile", href: "/farmer/profile" },
-    { label: "Cart", href: "/Cart" },
-    { label: "Checkout", href: "/Checkout" },
   ],
   BUYER: [
     { label: "Marketplace", href: "/marketplace" },
@@ -18,13 +16,11 @@ export const ROLE_LINKS: Record<UserRole, { label: string; href: string }[]> = {
   ],
   TRANSPORTER: [
     { label: "Dashboard", href: "/Transporter/dashboard/missions" },
-    { label: "Cart", href: "/Cart" },
     {label: "Home", href: "/" },
     { label: "Profile", href: "/Transporter/profile" },
-    { label: "Checkout", href: "/Checkout" },
   ],
   ADMIN: [
-    { label: "Dashboard", href: "/Ministry/dashboard/users" },
+    { label: "Dashboard", href: "/Ministry/dashboard" },
     {label: "Home", href: "/" },
   ],
 };

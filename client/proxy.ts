@@ -5,9 +5,9 @@ import { UserRole } from "./types/roles";
 const PUBLIC_ROUTES = ["/Login", "/Register", "/not-allowed"];
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
-  FARMER: ["/farmer", "/marketplace" ,"/farmer/profile", "/Cart", "/Checkout", "/"],
+  FARMER: ["/farmer", "/marketplace" ,"/farmer/profile", "/"],
   BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/"],
-  TRANSPORTER: ["/transporter", "/transporter/profile", "/Cart", "/Checkout", "/"],
+  TRANSPORTER: ["/transporter", "/transporter/profile", "/"],
   ADMIN: ["/Ministry/dashboard", "/"],
 };
 

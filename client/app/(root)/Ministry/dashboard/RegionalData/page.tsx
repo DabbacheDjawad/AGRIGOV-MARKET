@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import RegionalHeader from "@/components/Ministry/Regional/RegionalHeader";
 import YieldSidebar from "@/components/Ministry/Regional/YieldSideBar";
 import RegionalMap from "@/components/Ministry/Regional/RegionalMap";
 import RegionalRankings from "@/components/Ministry/Regional/RegionalRanking";

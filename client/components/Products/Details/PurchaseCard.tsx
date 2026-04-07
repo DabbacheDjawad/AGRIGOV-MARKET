@@ -57,7 +57,7 @@ export default function PurchaseCard({ product }: Props) {
       {/* Title + favourite */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 leading-tight">{product.title}</h1>
+          <h1 className="text-xl font-bold text-gray-900 leading-tight">{product.ministry_product.name}</h1>
           <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
             <span className="material-symbols-outlined text-sm">{SEASON_ICONS[product.season]}</span>
             {SEASON_LABELS[product.season]} · {product.category_name}

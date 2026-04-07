@@ -223,7 +223,7 @@ export default function ProductManagementPage() {
       {
         icon:  "local_florist",
         label: "Categories",
-        value: String(new Set(products.map((p) => p.category)).size),
+        value: String(new Set(products.map((p) => p.category_name)).size),
         sub:   "product types",
       },
     ];
@@ -408,7 +408,7 @@ export default function ProductManagementPage() {
           isLoading={isLoading}
           onDelete={async (id) => {
             const p = products.find((p) => p.id === id);
-            if (p) setDeleteTarget({ id, name: p.title });
+            if (p) setDeleteTarget({ id, name: p.ministry_product.name });
           }}
           onToggleStock={handleToggleStock}
         />

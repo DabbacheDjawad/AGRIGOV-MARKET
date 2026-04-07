@@ -39,7 +39,7 @@ export default function ProductCard({ product }: Props) {
       <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
         <Image
           src={imageUrl}
-          alt={product.title}
+          alt={product.ministry_product.name}
           fill
           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
@@ -94,7 +94,7 @@ export default function ProductCard({ product }: Props) {
         </div>
 
         <h3 className="text-base font-bold text-neutral-900 mb-1 leading-snug">
-          {product.title}
+          {product.ministry_product.name  }
         </h3>
         <p className="text-sm text-neutral-500 mb-3 line-clamp-2 leading-relaxed">
           {product.description}

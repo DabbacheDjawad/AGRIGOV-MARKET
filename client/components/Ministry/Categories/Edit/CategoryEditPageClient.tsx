@@ -1,22 +1,15 @@
 'use client';
-
-import Image from 'next/image';
-import Link from 'next/link';
 import { useState, useCallback } from 'react';
-import CategoryEditSidebar from './Sidebar';
 import CoreDefinitionCard from './CoreDefinitionCard';
 import QualityMetricsCard from './QualityMetricsCard';
 import CertificationsCard from './CertificationsCard';
 import SubCategoriesCard from './SubcategoryCard';
-import CategoryEditMobileNav from './Mobilenav';
 import {
   INITIAL_FORM,
   INITIAL_METRICS,
   INITIAL_CERTIFICATIONS,
   INITIAL_SUBCATEGORIES,
   BREADCRUMBS,
-  TOP_NAV,
-  ADMIN_AVATAR_URL,
   LAST_MODIFIED,
 } from '@/types/EditCategory';
 import type { CategoryForm, Certification } from '@/types/EditCategory';
@@ -83,11 +76,8 @@ export default function CategoryEditPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
-      {/* Sidebar */}
-      <CategoryEditSidebar />
-
       {/* Main Content */}
-      <main className="lg:pl-64 min-h-screen">
+      <main className="min-h-screen">
         <div className="max-w-6xl mx-auto p-6 lg:p-10">
 
           {/* Breadcrumbs + page header */}
@@ -226,9 +216,6 @@ export default function CategoryEditPage() {
           </footer>
         </div>
       </main>
-
-      {/* Mobile Bottom Nav */}
-      <CategoryEditMobileNav />
     </div>
   );
 }

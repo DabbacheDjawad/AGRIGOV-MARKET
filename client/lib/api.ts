@@ -7,7 +7,7 @@ import type {
   UpdateQuantityRequest,
   RemoveItemRequest,
 } from "@/types/Cart";
-
+import type { CheckoutResponse } from "@/types/Checkout";
 import type {
   MeResponse,
   EditableUserFields,
@@ -18,7 +18,8 @@ import type {
 } from "@/types/Profile";
 import { PaginatedProducts } from "@/types/Inventory";
 import type { OrdersApiResponse, ApiOrderStatus } from "@/types/Orders";
-
+import type { ApiDashboardResponse, ApiPendingUsersResponse } from "@/types/UserManagement";
+import type { ApiUserDetailResponse, ApiValidateResponse, ApiRejectResponse } from "@/types/UserValidation";
 const BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 // ─── Typed error ──────────────────────────────────────────────────────────────
@@ -90,6 +91,29 @@ export const farmerProductApi = {
 
 
 
+// ─── Orders / Checkout ────────────────────────────────────────────────────────
+ 
+export const orderApi = {
+  /**
+   * POST /api/orders/checkout/
+   * Converts the current cart into a confirmed order.
+   * Body: { transporter_id, delivery_wilaya, delivery_baladiya, delivery_address, notes? }
+   */
+  checkout: () =>
+    apiFetch<CheckoutResponse>("/api/orders/checkout/", {
+      method: "POST",
+    }),
+ 
+  /**
+   * GET /api/orders/{id}/
+   * Fetch a single order by ID (used on the confirmation page).
+   */
+  detail: (id: number | string) =>
+    apiFetch<CheckoutResponse>(`/api/orders/${id}/`),
+};
+
+
+
 
 // ─── Farmer order management ──────────────────────────────────────────────────
  
@@ -115,6 +139,14 @@ export const farmerOrderApi = {
     }),
 };
 
+
+// ─── Farmer analytics dashboard ───────────────────────────────────────────────
+ 
+import type { FarmerDashboardResponse } from "@/types/FarmerAnalytics";
+ 
+export const farmerDashboardApi = {
+  get: () => apiFetch<FarmerDashboardResponse>("/api/dashboard/"),
+};
 
 
 // ─── Farmer mission management ────────────────────────────────────────────────
@@ -261,5 +293,50 @@ export const inventoryApi = {
     apiFetch(`/api/products/${id}/`, {
       method: "PATCH",
       body:   JSON.stringify(body),
+    }),
+};
+
+
+// ─── Ministry / Admin ─────────────────────────────────────────────────────────
+ 
+export const ministryApi = {
+  /**
+   * GET /api/dashboard/
+   * Returns overview stats and recent activity for the admin.
+   */
+  dashboard: () => apiFetch<ApiDashboardResponse>("/api/dashboard/"),
+ 
+  /**
+   * GET /api/users/pending/?limit=:limit&offset=:offset
+   * Returns paginated list of users awaiting validation.
+   * Note: the API wraps results in a status envelope: results.data[]
+   */
+  pendingUsers: (limit = 10, offset = 0) => {
+    const p = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+    return apiFetch<ApiPendingUsersResponse>(`/api/users/pending/?${p.toString()}`);
+  },
+ 
+  /**
+   * GET /api/users/:id/
+   * Returns full user detail including role-specific profile and documents.
+   */
+  userDetail: (id: number) =>
+    apiFetch<ApiUserDetailResponse>(`/api/users/${id}/`),
+ 
+  /**
+   * PATCH /api/users/:id/validate/
+   * Ministry approves a user — no body required.
+   */
+  validateUser: (id: number) =>
+    apiFetch<ApiValidateResponse>(`/api/users/${id}/validate/`, { method: "PATCH" }),
+ 
+  /**
+   * PATCH /api/users/:id/reject/
+   * Ministry rejects a user with a mandatory reason string.
+   */
+  rejectUser: (id: number, reason: string) =>
+    apiFetch<ApiRejectResponse>(`/api/users/${id}/reject/`, {
+      method: "PATCH",
+      body:   JSON.stringify({ reason }),
     }),
 };

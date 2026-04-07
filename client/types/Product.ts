@@ -22,7 +22,13 @@ export interface ApiFarm {
 /** One item from GET /api/products/ or GET /api/products/{id}/ */
 export interface ApiProduct {
   id: number;
-  title: string;
+  ministry_product: {
+    name: string;
+    slug: string;
+    category: string;
+    description: string;
+    isActive: boolean;
+  };
   description: string;
   unit_price: string;    // DRF DecimalField → string
   stock: number;

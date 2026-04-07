@@ -1,7 +1,5 @@
 'use client';
-
 import { useState, useMemo } from 'react';
-import CategorySidebar from './CategorySidebar';
 import CategoryTable from './CategoryTable';
 import QualityStandardsPanel from './QualityStandards';
 import CertificationsPanel from './Certifications';
@@ -62,9 +60,6 @@ export default function CategoryManagementPage() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex h-screen overflow-hidden font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
-      {/* Sidebar */}
-      <CategorySidebar />
-
       {/* Main */}
       <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-background-dark">
 

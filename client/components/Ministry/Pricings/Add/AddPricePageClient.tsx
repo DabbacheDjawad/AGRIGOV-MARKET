@@ -17,6 +17,7 @@ import {
   TOP_NAV,
   SIDEBAR_NAV,
 } from '@/types/AddOfficialPrice';
+import AdminSidebar from '../../AdminSideBar';
 import type { CommodityForm, RegionVariation } from '@/types/AddOfficialPrice';
 
 export default function CommodityEntryPage() {
@@ -66,72 +67,8 @@ export default function CommodityEntryPage() {
 
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
-      {/* Top App Bar */}
-      <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6 h-16 shadow-sm border-b border-primary/10">
-        <span className="text-xl font-extrabold text-primary italic">Harvest Intel</span>
-
-        <div className="flex items-center gap-6">
-          <nav className="hidden md:flex items-center gap-4" aria-label="Top navigation">
-            {TOP_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={item.active ? 'page' : undefined}
-                className={
-                  item.active
-                    ? 'text-primary font-semibold text-lg tracking-tight px-3 py-1'
-                    : 'text-slate-500 dark:text-slate-400 font-bold text-lg tracking-tight hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors px-3 py-1 rounded-xl'
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2">
-            <button aria-label="View notifications" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all">
-              <span className="material-symbols-outlined text-primary">notifications</span>
-            </button>
-            <button aria-label="Open settings" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all">
-              <span className="material-symbols-outlined text-primary">settings</span>
-            </button>
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-primary/20 relative ml-2">
-              <Image src={ADMIN_AVATAR_URL} alt="Admin profile avatar" fill sizes="32px" className="object-cover" priority />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Sidebar */}
-      <nav className="hidden md:flex flex-col h-full w-64 fixed left-0 top-0 z-40 bg-white dark:bg-slate-900 border-r border-primary/10 py-4 space-y-2 pt-20">
-        <div className="px-6 mb-6">
-          <h2 className="font-bold text-slate-900 dark:text-slate-100 text-xl">Modern Homestead</h2>
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Agri-Management System</p>
-        </div>
-        {SIDEBAR_NAV.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={item.active ? 'page' : undefined}
-            className={
-              item.active
-                ? 'bg-primary/10 text-primary rounded-xl px-4 py-3 mx-2 flex items-center gap-3 text-sm font-semibold tracking-wide uppercase'
-                : 'text-slate-600 dark:text-slate-400 px-4 py-3 mx-2 hover:bg-primary/10 hover:text-primary rounded-xl flex items-center gap-3 transition-all duration-200 text-sm font-medium tracking-wide uppercase'
-            }
-          >
-            <span className="material-symbols-outlined">{item.icon}</span>
-            {item.label}
-          </Link>
-        ))}
-        <div className="mt-auto pt-6 border-t border-primary/10 px-2">
-          <Link href="#" className="text-slate-600 dark:text-slate-400 px-4 py-3 mx-2 hover:bg-primary/10 hover:text-primary rounded-xl flex items-center gap-3 text-sm font-medium tracking-wide uppercase">
-            <span className="material-symbols-outlined">help</span>
-            Help
-          </Link>
-        </div>
-      </nav>
-
       {/* Main */}
-      <main className="md:ml-64 pt-24 pb-12 px-6 md:px-12 max-w-7xl mx-auto">
+      <main className=" pt-24 pb-12 px-6 md:px-12 max-w-7xl mx-auto">
         {/* Page header */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">

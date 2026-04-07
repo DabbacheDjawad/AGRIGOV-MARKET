@@ -61,7 +61,7 @@ const handleDecrement = async () => {
           <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-100 relative bg-neutral-100">
             <Image
               src={imageUrl}
-              alt={product.title}
+              alt={product.ministry_product.name}
               fill
               className="object-cover"
               sizes="80px"
@@ -70,7 +70,7 @@ const handleDecrement = async () => {
 
           {/* Text */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900 truncate">{product.title}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 truncate">{product.ministry_product.name}</h3>
             <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{product.description}</p>
 
             {/* Farm + location */}

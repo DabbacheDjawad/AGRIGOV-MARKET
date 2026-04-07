@@ -66,7 +66,7 @@ export default function ProductDetailPage({ productId }: Props) {
     ...(product
       ? [{ label: product.category_name, href: `/marketplace?category=${product.category_name}` }]
       : []),
-    { label: product?.title ?? "Loading…" },
+    { label: product?.ministry_product.name ?? "Loading…" },
   ];
 
   if (!isLoading && error) {
@@ -123,7 +123,7 @@ export default function ProductDetailPage({ productId }: Props) {
               <div className="lg:col-span-8 space-y-6">
                 <ProductGallery
                   images={product.images}
-                  title={product.title}
+                  title={product.ministry_product.name}
                   inStock={product.in_stock}
                   rating={product.average_rating}
                 />

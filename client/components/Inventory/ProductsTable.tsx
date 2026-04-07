@@ -4,6 +4,7 @@ import type { MyProduct } from "@/types/Inventory";
 
 const PLACEHOLDER = "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=200&q=70";
 
+
 interface Props {
   products:   MyProduct[];
   isLoading:  boolean;
@@ -114,7 +115,7 @@ export default function ProductsTable({ products, isLoading, onDelete, onToggleS
                             href={`/marketplace/${p.id}`}
                             className="text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-primary-dark transition-colors truncate block"
                           >
-                            {p.title}
+                            {p.ministry_product.name}
                           </Link>
                           <p className="text-xs text-slate-400 truncate">{p.farm.name}</p>
                         </div>
@@ -124,7 +125,7 @@ export default function ProductsTable({ products, isLoading, onDelete, onToggleS
                     {/* Category / Season */}
                     <td className="px-5 py-4">
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize block">
-                        {p.category}
+                        {p.category_name}
                       </span>
                       <span className="text-xs text-slate-400 capitalize">{p.season.replace("_", " ")}</span>
                     </td>
@@ -170,7 +171,7 @@ export default function ProductsTable({ products, isLoading, onDelete, onToggleS
                         {/* Edit */}
                         <Link
                           href={`/farmer/dashboard/products/${p.id}/edit`}
-                          aria-label={`Edit ${p.title}`}
+                          aria-label={`Edit ${p.ministry_product.name}`}
                           title="Edit"
                           className="p-2 text-slate-500 hover:text-primary-dark hover:bg-primary/10 rounded-lg transition-colors"
                         >

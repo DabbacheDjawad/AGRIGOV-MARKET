@@ -6,15 +6,16 @@ const PUBLIC_ROUTES = ["/Login", "/Register", "/not-allowed"];
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
   FARMER: ["/farmer", "/marketplace" ,"/farmer/profile", "/"],
-  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/"],
+  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/buyer/dashboard" , "/"],
   TRANSPORTER: ["/transporter", "/transporter/profile", "/"],
-  ADMIN: ["/Ministry/dashboard", "/"],
+  ADMIN: ["/Ministry/dashboard" , "/"],
 };
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("access");
   const roleCookie = req.cookies.get("role");
   const { pathname } = req.nextUrl;
+  
 
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 

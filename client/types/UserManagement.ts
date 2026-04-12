@@ -27,10 +27,15 @@ export function displayRoleToApi(role: RoleFilter): ApiUserRole | null {
 // ─── Dashboard API ────────────────────────────────────────────────────────────
 
 export interface ApiDashboardOverview {
-  total_revenue: number;
   revenue_growth: number;
-  total_products: number;
   avg_rating: number;
+  total_users: number;
+  new_users_last_30_days: number;
+  total_products: number;
+  total_orders: number;
+  total_revenue: number;
+  monthly_revenue: number;
+  total_reviews: number;
 }
 export interface ApiRecentUser {
   id:         number;

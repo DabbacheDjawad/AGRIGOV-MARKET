@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="fixed top-0 right-0 left-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6 h-16 shadow-sm border-b border-primary/10 lg:left-64">
           <span className="text-xl font-extrabold text-primary italic">Harvest Intel</span>
         </header>
-        <main className="flex-1 pt-20 pb-24 md:pb-12 ml-64">
+        <main className="flex-1 pt-10 pb-12 lg:ml-64">
           {children}
         </main>
       </div>

@@ -118,13 +118,18 @@ export default function UserManagementPage() {
   const cancelledRef = useRef(false);
 
   // ── fetch dashboard stats ──────────────────────────────────────────────────
-  useEffect(() => {
-    setIsLoadingDash(true);
-    ministryApi.dashboard()
-      .then((res) => setOverview(res.data.overview))
-      .catch((err: unknown) => setDashError(err instanceof ApiError ? err.message : 'Failed to load stats.'))
-      .finally(() => setIsLoadingDash(false));
-  }, []);
+useEffect(() => {
+  setIsLoadingDash(true);
+  ministryApi.dashboard()
+    .then((res) => {
+      setOverview(res.overview); 
+    })
+    .catch((err: unknown) => {
+      console.error("Dashboard Error:", err); // Log this to see the real error in console
+      setDashError(err instanceof ApiError ? err.message : 'Failed to load stats.');
+    })
+    .finally(() => setIsLoadingDash(false));
+}, []);
 
   // ── fetch pending users ────────────────────────────────────────────────────
   const fetchUsers = useCallback(() => {

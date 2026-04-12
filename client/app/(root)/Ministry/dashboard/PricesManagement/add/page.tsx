@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import CommodityEntryPage from '@/components/Ministry/Pricings/Add/AddPricePageClient';
+import type { Metadata } from "next";
+import AddPricePage from "@/components/Ministry/Pricings/Add/AddPricePageClient";
 
 export const metadata: Metadata = {
-  title:       'Add Official Price | Agrigov Market Dashboard',
-  description: 'Official administrative entry for the national agricultural commodity pricing index',
+  title:       "Add Official Price | Ministry of Agriculture",
+  description: "Official administrative entry for the national agricultural commodity pricing index",
 };
 
-export default function CommodityEntryRoute() {
-  return <CommodityEntryPage />;
+export default function AddPriceRoute() {
+  return <AddPricePage />;
 }

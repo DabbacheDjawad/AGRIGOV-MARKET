@@ -49,8 +49,9 @@ export const adminNavItems: AdminNavItem[] = [
   { icon: "dashboard", label: "Dashboard", href: "/Ministry/dashboard", active: true },
   { icon: "map", label: "Regional Data", href: "/Ministry/dashboard/RegionalData" },
   { icon: "trending_up", label: "Official Prices", href: "/Ministry/dashboard/PricesManagement" },
+  {icon: "category", label: "Categories", href: "/Ministry/dashboard/categories" },
   { icon: "people_alt", label: "Users Management", href: "/Ministry/dashboard/users" },
-  { icon: "gavel", label: "Regulations", href: "/Ministry/dashboard/regulations", section: "System" },
+  {icon: "bar_chart", label: "Analytics", href: "/Ministry/dashboard/analytics" },
 ];
 
 export const recentTransactions: Transaction[] = [

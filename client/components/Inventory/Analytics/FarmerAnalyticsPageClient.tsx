@@ -71,7 +71,6 @@ function KpiCard({
     </div>
   );
 }
-
 // ─── Bar chart (pure CSS) ─────────────────────────────────────────────────────
 
 function BarChart({
@@ -106,34 +105,33 @@ function BarChart({
       </div>
     );
   }
-
+  
   return (
     <div className="h-52 flex items-end gap-1.5 px-2">
       {data.map((d) => {
         const pct = Math.max((d.value / max) * 100, 4);
         return (
-          <div key={d.label} className="flex-1 flex flex-col items-center group/bar relative">
+<div 
+    key={d.label} 
+    className="flex-1 h-full flex flex-col justify-end items-center group/bar relative"
+  >
             {/* tooltip */}
             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
               {d.label}: {d.value}
             </div>
 
-            <div
-              className={`w-full rounded-t-lg transition-all duration-500 ${
-                d.highlight
-                  ? "bg-primary shadow-lg shadow-primary/30"
-                  : "bg-neutral-200 dark:bg-earth-800 group-hover/bar:bg-primary/60"
-              }`}
-              style={{ height: `${pct}%` }}
-            />
-            <span
-              className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${
-                d.highlight ? "text-primary" : "text-slate-400"
-              }`}
-            >
-              {d.label}
-            </span>
-          </div>
+<div
+      className={`w-full rounded-t-lg transition-all duration-500 ${
+        d.highlight
+          ? "bg-primary shadow-lg shadow-primary/30"
+          : "bg-neutral-200 dark:bg-earth-800 group-hover/bar:bg-primary/60"
+      }`}
+      style={{ height: `${pct}%` }} 
+    />
+    <span className="...">
+      {d.label}
+    </span>
+  </div>
         );
       })}
     </div>
@@ -218,7 +216,7 @@ export default function FarmerAnalyticsPage() {
 
     return () => { cancelled = true; };
   }, []);
-
+  
   // ── Derived chart data ────────────────────────────────────────────────────
 
   /** Revenue bar chart — collapse to labels */
@@ -252,7 +250,6 @@ export default function FarmerAnalyticsPage() {
   const maxSold = Math.max(...topProducts.map((p) => p.total_sold ?? 0), 1);
 
   const { overview } = data ?? {};
-console.log(data);
   // ── render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">

@@ -3,14 +3,22 @@ from django.db.models import Q
 from .models import OfficialPrice
 from regions.utils import get_region_from_wilaya
 
+# 1. Ensure you have the helper defined
+def normalize_name(name: str) -> str:
+    if not name:
+        return ""
+    return " ".join(name.split()).lower()
 
 def get_active_price(ministry_product_id: int, wilaya: str = ""):
     """
     Returns the most specific active OfficialPrice for a MinistryProduct.
-    Priority: exact wilaya  >  broad region  >  national
+    Priority: exact wilaya > broad region > national
     """
     now = timezone.now()
-    product_name = normalize_name(product_name)
+
+    # FIX: Use 'wilaya' (which exists in your arguments) instead of 'product_name'
+    if wilaya:
+        wilaya = normalize_name(wilaya)
 
     base_qs = OfficialPrice.objects.filter(
         product_id=ministry_product_id,
@@ -20,7 +28,7 @@ def get_active_price(ministry_product_id: int, wilaya: str = ""):
     )
 
     if wilaya:
-        # 1. Exact wilaya match
+        # 1. Exact wilaya match (case-insensitive)
         exact = base_qs.filter(wilaya__iexact=wilaya).first()
         if exact:
             return exact

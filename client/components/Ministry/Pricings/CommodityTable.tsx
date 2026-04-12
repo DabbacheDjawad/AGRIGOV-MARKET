@@ -1,43 +1,64 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useMemo } from "react";
-import CategoryBadge from "./CategoryBadge";
-import type { CommodityPrice } from "@/types/Prices";
-import { CATEGORIES } from "@/types/Prices";
+import type { ApiOfficialPrice } from "@/types/Prices";
+import {
+  formatPriceRange,
+  formatOfficialPriceDate,
+  regionBadgeClass,
+} from "@/types/Prices";
 
 interface Props {
-  items: CommodityPrice[];
-  onEdit: (item: CommodityPrice) => void;
-  editingId: string | null;
+  items:      ApiOfficialPrice[];
+  totalCount: number;
+  page:       number;
+  pageSize:   number;
+  isLoading:  boolean;
+  onEdit:     (item: ApiOfficialPrice) => void;
+  onDelete:   (id: number) => void;
+  onPageChange: (page: number) => void;
+  editingId:  number | null;
 }
 
-const PAGE_SIZE = 5;
+function SkeletonRow() {
+  return (
+    <tr className="animate-pulse">
+      {[1,2,3,4,5,6].map((i) => (
+        <td key={i} className="px-6 py-4">
+          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
+          {i === 1 && <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded w-1/2 mt-1.5" />}
+        </td>
+      ))}
+    </tr>
+  );
+}
 
-export default function CommodityTable({ items, onEdit, editingId }: Props) {
+export default function CommodityTable({
+  items, totalCount, page, pageSize, isLoading,
+  onEdit, onDelete, onPageChange, editingId,
+}: Props) {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
-    return items.filter((item) => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || item.name.toLowerCase().includes(q);
-      const matchCat =
-        category === "All Categories" ||
-        category.toLowerCase().includes(item.category.toLowerCase()) ||
-        item.category.toLowerCase().includes(category.split(" ")[0].toLowerCase());
-      return matchSearch && matchCat;
-    });
-  }, [items, search, category]);
+    const q = search.toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (item) =>
+        item.product_detail.name.toLowerCase().includes(q) ||
+        item.wilaya.toLowerCase().includes(q) ||
+        item.region_name.toLowerCase().includes(q) ||
+        item.unit.toLowerCase().includes(q)
+    );
+  }, [items, search]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const start      = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end        = Math.min(page * pageSize, totalCount);
 
   return (
     <div className="lg:col-span-2 flex flex-col space-y-4">
       {/* Toolbar */}
-      <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-border-light dark:border-border-dark shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-neutral-light dark:border-border-dark shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="relative w-full sm:w-96">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span className="material-icons text-slate-400">search</span>
@@ -45,158 +66,182 @@ export default function CommodityTable({ items, onEdit, editingId }: Props) {
           <input
             type="text"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search commodities (e.g., Maize, Rice)..."
-            className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm transition duration-150 ease-in-out dark:text-white"
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search product, wilaya, region…"
+            className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary dark:text-white"
           />
         </div>
 
-        <div className="flex gap-2 w-full sm:w-auto">
-          <select
-            value={category}
-            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-            className="block w-full pl-3 pr-10 py-2 text-base border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg dark:bg-slate-800 dark:text-white"
-          >
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-background-dark bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors whitespace-nowrap"
-          >
-            <span className="material-icons text-lg mr-1">file_download</span>
-            Export
-          </button>
-        </div>
+        <button
+          type="button"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg shadow-sm text-slate-900 bg-primary hover:opacity-90 transition-colors whitespace-nowrap"
+        >
+          <span className="material-icons text-lg mr-1">file_download</span>
+          Export
+        </button>
       </div>
 
       {/* Table */}
-      <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-neutral-light dark:border-border-dark shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border-light dark:divide-border-dark">
+          <table className="min-w-full divide-y divide-neutral-light dark:divide-border-dark">
             <thead className="bg-slate-50 dark:bg-slate-900/50">
               <tr>
-                {["Commodity", "Category", "Unit", "Official Price", "Last Updated", ""].map(
+                {["Product", "Region / Wilaya", "Unit", "Price Range (DZD)", "Validity", "Status", ""].map(
                   (h, i) => (
                     <th
                       key={i}
                       scope="col"
                       className={`px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider ${
-                        i === 3 ? "text-right" : i === 5 ? "relative" : "text-left"
-                      } ${i === 4 ? "pl-8" : ""}`}
+                        i === 3 ? "text-right" : i === 6 ? "relative" : "text-left"
+                      }`}
                     >
-                      {h || <span className="sr-only">Edit</span>}
+                      {h || <span className="sr-only">Actions</span>}
                     </th>
                   )
                 )}
               </tr>
             </thead>
-            <tbody className="bg-surface-light dark:bg-surface-dark divide-y divide-border-light dark:divide-border-dark">
-              {paginated.map((item) => (
-                <tr
-                  key={item.id}
-                  className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
-                    item.id === editingId ? "bg-primary/5 dark:bg-primary/5" : ""
-                  }`}
-                >
-                  {/* Name + image */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="relative h-10 w-10 shrink-0">
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.imageAlt}
-                          fill
-                          className="rounded-full object-cover"
-                          sizes="40px"
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">
-                          {item.name}
-                        </div>
-                        <div className="text-xs text-slate-500">{item.subtitle}</div>
-                      </div>
-                    </div>
-                  </td>
-                  {/* Category */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <CategoryBadge category={item.category} />
-                  </td>
-                  {/* Unit */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {item.unit}
-                  </td>
-                  {/* Price */}
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900 dark:text-white font-mono">
-                    ${item.officialPrice.toFixed(2)}
-                  </td>
-                  {/* Last updated */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 pl-8">
-                    {item.lastUpdated}
-                  </td>
-                  {/* Edit */}
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(item)}
-                      className="text-slate-400 hover:text-primary transition-colors"
-                      aria-label={`Edit ${item.name}`}
-                    >
-                      <span className="material-icons">edit</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {paginated.length === 0 && (
+            <tbody className="divide-y divide-neutral-light dark:divide-border-dark">
+              {isLoading ? (
+                Array.from({ length: pageSize }).map((_, i) => <SkeletonRow key={i} />)
+              ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">
-                    No commodities match your search.
+                  <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-400">
+                    <span className="material-icons text-3xl block mb-2 opacity-40">price_change</span>
+                    No price entries match your search.
                   </td>
                 </tr>
+              ) : (
+                filtered.map((item) => {
+                  const isEditing = item.id === editingId;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
+                        isEditing ? "bg-primary/5" : ""
+                      }`}
+                    >
+                      {/* Product */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white capitalize">
+                          {item.product_detail.name}
+                        </div>
+                        <div className="text-xs text-slate-500 font-mono">
+                          #{item.product} · {item.product_detail.category_name ?? "—"}
+                        </div>
+                      </td>
+
+                      {/* Region / Wilaya */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${regionBadgeClass(
+                            item.region_name
+                          )}`}
+                        >
+                          {item.region_name || "National"}
+                        </span>
+                        {item.wilaya && (
+                          <div className="text-xs text-slate-400 mt-0.5 capitalize">
+                            {item.wilaya}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Unit */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {item.unit}
+                      </td>
+
+                      {/* Price range */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold font-mono text-slate-900 dark:text-white">
+                        {formatPriceRange(item)}
+                      </td>
+
+                      {/* Validity */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
+                        <span className="block">{formatOfficialPriceDate(item.valid_from)}</span>
+                        {item.valid_until ? (
+                          <span className="block text-slate-400">
+                            → {formatOfficialPriceDate(item.valid_until)}
+                          </span>
+                        ) : (
+                          <span className="block text-slate-300 italic">No expiry</span>
+                        )}
+                      </td>
+
+                      {/* Active badge */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {item.is_active ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-light dark:bg-primary/20 text-primary-dark text-[11px] font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-bold">
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => onEdit(item)}
+                            className="p-1.5 text-slate-400 hover:text-primary transition-colors rounded"
+                            aria-label={`Edit ${item.product_detail.name}`}
+                          >
+                            <span className="material-icons text-base">edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete(item.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded"
+                            aria-label={`Delete price #${item.id}`}
+                          >
+                            <span className="material-icons text-base">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        <div className="bg-surface-light dark:bg-surface-dark px-4 py-3 flex items-center justify-between border-t border-border-light dark:border-border-dark sm:px-6 mt-auto">
+        <div className="bg-white dark:bg-slate-800 px-4 py-3 flex items-center justify-between border-t border-neutral-light dark:border-border-dark sm:px-6 mt-auto">
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            Showing{" "}
-            <span className="font-medium">
-              {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}
-            </span>{" "}
-            to{" "}
-            <span className="font-medium">
-              {Math.min(page * PAGE_SIZE, filtered.length)}
-            </span>{" "}
-            of <span className="font-medium">{filtered.length}</span> results
+            Showing <span className="font-medium">{start}</span> to{" "}
+            <span className="font-medium">{end}</span> of{" "}
+            <span className="font-medium">{totalCount}</span> entries
           </p>
 
-          <nav
-            aria-label="Pagination"
-            className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-          >
+          <nav className="inline-flex rounded-md shadow-sm -space-x-px">
             <button
               type="button"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border-light dark:border-border-dark bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              onClick={() => onPageChange(Math.max(1, page - 1))}
+              disabled={page === 1 || isLoading}
+              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <span className="sr-only">Previous</span>
               <span className="material-icons text-base">chevron_left</span>
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((n) => (
               <button
                 key={n}
                 type="button"
-                onClick={() => setPage(n)}
+                onClick={() => onPageChange(n)}
+                disabled={isLoading}
                 aria-current={n === page ? "page" : undefined}
                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors ${
                   n === page
                     ? "z-10 bg-primary/20 border-primary text-primary-dark dark:text-primary"
-                    : "bg-white dark:bg-slate-800 border-border-light dark:border-border-dark text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700"
                 }`}
               >
                 {n}
@@ -205,11 +250,10 @@ export default function CommodityTable({ items, onEdit, editingId }: Props) {
 
             <button
               type="button"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border-light dark:border-border-dark bg-white dark:bg-slate-800 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages || isLoading}
+              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <span className="sr-only">Next</span>
               <span className="material-icons text-base">chevron_right</span>
             </button>
           </nav>

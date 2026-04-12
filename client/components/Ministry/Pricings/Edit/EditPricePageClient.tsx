@@ -3,12 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import PriceSummaryCard from './PricesSummary';
-import PriceTrendChart from './PriceTrandsChart';
-import PriceRevisionCard from './PriceRevisionCard';
 import {
-  TOP_NAV,
-  SIDEBAR_NAV,
   BREADCRUMBS,
   COMMODITY_NAME,
   COMMODITY_ID,
@@ -72,34 +67,6 @@ export default function PriceManagementPage() {
               ID: {COMMODITY_ID}
             </span>
           </div>
-        </div>
-
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          <div className="md:col-span-4 space-y-6">
-            <PriceSummaryCard
-              currentPrice={CURRENT_PRICE}
-              priceUnit={PRICE_UNIT}
-              quarterDeltaPct={QUARTER_DELTA_PCT}
-              healthBars={MARKET_HEALTH_BARS}
-            />
-          </div>
-
-          <PriceTrendChart
-            bars={CHART_BARS}
-            ranges={CHART_RANGES}
-            activeRange={activeRange}
-            onRangeChange={setActiveRange}
-          />
-
-          <PriceRevisionCard
-            form={form}
-            cropSpec={CROP_SPEC}
-            currentPrice={CURRENT_PRICE}
-            onChange={handleFormChange}
-            onPublish={handlePublish}
-            isPublishing={isPublishing}
-          />
         </div>
 
         {/* Footer */}

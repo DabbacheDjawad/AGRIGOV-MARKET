@@ -197,7 +197,7 @@ export default function UserValidationPage() {
       await ministryApi.rejectUser(userId, reason);
       setRejectOpen(false);
       // Navigate back to list after rejection
-      router.push('/ministry/dashboard/users');
+      router.push('/Ministry/dashboard/users');
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : 'Failed to reject user.');
       setIsRejecting(false);
@@ -295,7 +295,7 @@ export default function UserValidationPage() {
       {showSuccess && (
         <ApprovalSuccessOverlay
           farmerName={user.username}
-          onContinue={() => router.push('/ministry/dashboard/users')}
+          onContinue={() => router.push('/Ministry/dashboard/users')}
         />
       )}
 
@@ -368,7 +368,7 @@ export default function UserValidationPage() {
                   <span key={crumb} className="flex items-center gap-2">
                     {i < BREADCRUMBS.length - 1 ? (
                       <>
-                        <Link href="/ministry/dashboard/users" className="hover:text-primary transition-colors">
+                        <Link href="/Ministry/dashboard/users" className="hover:text-primary transition-colors">
                           {crumb}
                         </Link>
                         <span>/</span>

@@ -5,7 +5,7 @@ import OrdersFilters from "@/components/Inventory/Orders/OrderFilters";
 import OrdersTable from "@/components/Inventory/Orders/OrdersTable";
 import InvoicePanel from "@/components/Inventory/Orders/InvoicePanel";
 import Breadcrumb from "@/components/Cart/BreadCrumb";
-import type { ApiOrder, ApiOrderStatus, StatusFilter } from "@/types/Orders";
+import { formatOrderDate, parseBuyerEmail, type ApiOrder, type ApiOrderStatus, type StatusFilter } from "@/types/Orders";
 import { farmerOrderApi, ApiError } from "@/lib/api";
 
 const PAGE_SIZE = 5;
@@ -36,6 +36,32 @@ export default function OrderHistoryPage() {
   const [toast,       setToast]       = useState<string | null>(null);
 
   const cancelledRef = useRef(false);
+
+
+
+// ─── CSV export helper ────────────────────────────────────────────────────────
+
+function exportOrdersCSV(orders: ApiOrder[]) {
+  const header = ["Order ID","Buyer","Farm","Status","Total (DZD)","Products","Date"].join(",");
+  const rows   = orders.map(o => [
+    o.id,
+    `"${parseBuyerEmail(o.buyer)}"`,
+    `"${o.farm.split(" - ")[0] ?? o.farm}"`,
+    o.status,
+    parseFloat(o.total_price).toFixed(2),
+    `"${o.items.map(i => `${i.product.title} ×${i.quantity}`).join("; ")}"`,
+    formatOrderDate(o.created_at),
+  ].join(","));
+  const csv  = [header, ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 
   // ── fetch orders ──────────────────────────────────────────────────────────
   const fetchOrders = useCallback(() => {
@@ -148,7 +174,7 @@ export default function OrderHistoryPage() {
                   Track incoming buyer orders, confirm shipments, and download official invoices.
                 </p>
               </div>
-              <div className="mt-4 sm:mt-0">
+              <div className="mt-4 sm:mt-0 flex gap-5">
                 <button
                   type="button"
                   onClick={fetchOrders}
@@ -156,6 +182,14 @@ export default function OrderHistoryPage() {
                 >
                   <span className="material-icons text-base">refresh</span>
                   Refresh
+                </button>
+                <button
+                  type="button"
+                  onClick={() => exportOrdersCSV(orders)}
+                  className="inline-flex items-center gap-2 px-4 py-2 border shadow-sm text-sm font-medium rounded-md text-primary-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                >
+                  <span className="material-icons text-base">arrow_downward</span>
+                  Export CSV
                 </button>
               </div>
             </div>

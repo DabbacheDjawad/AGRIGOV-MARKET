@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import FarmerSidebar from "./FarmSidebar";
 import ListingStepper from "./ListingStepper";
 import ProductDetailsForm from "./ProductDetailsForm";
 import type { ListingStep, ProductListingForm ,ApiCategory} from "@/types/AddProduct";
@@ -129,7 +128,6 @@ export default function AddProductPage() {
 
   return (
     <div className="relative flex min-h-screen w-full bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
-      <FarmerSidebar />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 overflow-y-auto p-4 md:p-8 max-w-4xl mx-auto w-full">

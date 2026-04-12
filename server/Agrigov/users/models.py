@@ -107,11 +107,6 @@ class FarmerProfile(models.Model):
 
     def __str__(self):
         return f"FarmerProfile - {self.user.email}"
-    @property
-    def region(self):
-        if self.wilaya:
-            return get_region_from_wilaya(self.wilaya)
-        return "Unknown"
 
 class TransporterProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="transporter_profile")
@@ -157,11 +152,6 @@ class TransporterProfile(models.Model):
 
     def __str__(self):
         return f"TransporterProfile - {self.user.email}"
-    @property
-    def region(self):
-        if self.wilaya:
-            return get_region_from_wilaya(self.wilaya)
-        return "Unknown"
 
 
 class BuyerProfile(models.Model):
@@ -173,6 +163,7 @@ class BuyerProfile(models.Model):
         folder="AGRIGOV/buyers/businessLicenses",
         transformation={"quality": "auto", "fetch_format": "auto"}
     )
+    wilaya = models.CharField(max_length=100, blank=True)
 
     # Validation fields
     is_validated = models.BooleanField(default=False)

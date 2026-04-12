@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import DashboardSidebar from "@/components/Inventory/ProductsSidebar";
+import DashboardSidebar from "@/components/Inventory/Products/ProductsSidebar";
 import { FARMER_NAV } from "@/types/Inventory";
 
 export default function FarmerDashboardLayout({ children }: { children: React.ReactNode }) {

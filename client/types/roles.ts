@@ -13,6 +13,7 @@ export const ROLE_LINKS: Record<UserRole, { label: string; href: string }[]> = {
     { label: "Profile", href: "/buyer/profile" },
     { label: "Cart", href: "/Cart" },
     { label: "Checkout", href: "/Checkout" },
+    { label: "Dashboard", href: "/buyer/dashboard" },
   ],
   TRANSPORTER: [
     { label: "Dashboard", href: "/Transporter/dashboard/missions" },

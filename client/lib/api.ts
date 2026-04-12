@@ -27,6 +27,8 @@ import type {
   MissionStatus 
 } from "@/types/Transporter";
 
+import type { CategoriesApiResponse, ApiCategory, CategoryPayload } from "@/types/CategoryManagement";
+ 
 const BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 // ─── Typed error ──────────────────────────────────────────────────────────────
@@ -415,4 +417,176 @@ export const transporterApi = {
     // In transporterApi object
   getMissionDetail: (missionId: number) =>
   apiFetch<ApiMission>(`/api/missions/${missionId}/`),
+};
+
+// ─── Category management (Ministry) ──────────────────────────────────────────
+ 
+export const categoryApi = {
+  /**
+   * GET /api/categories/
+   * Returns paginated list of all categories.
+   */
+  list: (page = 1, pageSize = 20) => {
+    const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+    return apiFetch<CategoriesApiResponse>(`/api/categories/?${p.toString()}`);
+  },
+ 
+  /**
+   * GET /api/categories/:id/
+   * Returns a single category detail (id, name, slug, description).
+   */
+  detail: (id: number) =>
+    apiFetch<ApiCategory & { description?: string }>(`/api/categories/${id}/`),
+ 
+  /**
+   * POST /api/categories/create/
+   * Create a new category.  Body: { name, slug, description }
+   */
+  create: (payload: CategoryPayload) =>
+    apiFetch<ApiCategory>("/api/categories/create/", {
+      method: "POST",
+      body:   JSON.stringify(payload),
+    }),
+ 
+  /**
+   * PUT /api/categories/:id/update/
+   * Full update of an existing category.
+   */
+  update: (id: number, payload: CategoryPayload) =>
+    apiFetch<ApiCategory>(`/api/categories/${id}/update/`, {
+      method: "PUT",
+      body:   JSON.stringify(payload),
+    }),
+ 
+  /**
+   * DELETE /api/categories/:id/delete/
+   */
+  delete: (id: number) =>
+    apiFetch<void>(`/api/categories/${id}/delete/`, { method: "DELETE" }),
+};
+
+
+
+// ─── Official Price management (Ministry) ────────────────────────────────────
+ 
+import type { OfficialPricesResponse, ApiOfficialPrice, OfficialPricePayload } from "@/types/Prices";
+ 
+export const officialPriceApi = {
+  /**
+   * GET /api/official-prices/
+   * Paginated list of all official prices.
+   */
+  list: (page = 1, pageSize = 20) => {
+    const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+    return apiFetch<OfficialPricesResponse>(`/api/official-prices/?${p.toString()}`);
+  },
+ 
+  /**
+   * GET /api/official-prices/current/?product_id=:id
+   * Returns the current active price for a given ministry product.
+   */
+  current: (productId: number) =>
+    apiFetch<ApiOfficialPrice>(`/api/official-prices/current/?product_id=${productId}`),
+ 
+  /**
+   * POST /api/official-prices/create/
+   * Create a new official price entry.
+   */
+  create: (payload: OfficialPricePayload) =>
+    apiFetch<ApiOfficialPrice>("/api/official-prices/create/", {
+      method: "POST",
+      body:   JSON.stringify(payload),
+    }),
+ 
+  /**
+   * PATCH /api/official-prices/:id/
+   * Partial update (RetrieveUpdateDestroyAPIView).
+   */
+  update: (id: number, payload: Partial<OfficialPricePayload> & { is_active?: boolean }) =>
+    apiFetch<ApiOfficialPrice>(`/api/official-prices/${id}/`, {
+      method: "PATCH",
+      body:   JSON.stringify(payload),
+    }),
+ 
+  /**
+   * DELETE /api/official-prices/:id/
+   */
+  delete: (id: number) =>
+    apiFetch<void>(`/api/official-prices/${id}/`, { method: "DELETE" }),
+};
+
+
+
+// ─── Regional data (Ministry) ─────────────────────────────────────────────────
+ 
+import type {
+  AllRegionsStatsResponse,
+  RegionComparisonResponse,
+  RegionStatResponse,
+} from "@/types/Regional";
+ 
+export const regionalApi = {
+  /**
+   * GET /api/regions/stats/
+   * Returns stats for all four regions in one call.
+   */
+  allStats: () =>
+    apiFetch<AllRegionsStatsResponse>("/api/regions/stats/"),
+ 
+  /**
+   * GET /api/regions/comparision/
+   * Returns revenue, order count, and active price count per region.
+   */
+  comparison: () =>
+    apiFetch<RegionComparisonResponse>("/api/regions/comparision/"),
+ 
+  /**
+   * GET /api/regions/:region_name/stats/
+   * Detailed stats for a single region (e.g. "north", "east").
+   */
+  regionStats: (regionName: string) =>
+    apiFetch<RegionStatResponse>(`/api/regions/${regionName}/stats/`),
+};
+
+// ─── Buyer dashboard & orders ─────────────────────────────────────────────────
+ 
+import type {
+  BuyerDashboardResponse,
+  OrdersResponse,
+  ApiOrder,
+  ReviewsResponse,
+} from "@/types/BuyerDashboard";
+ 
+export const buyerApi = {
+  /** GET /api/dashboard/ — buyer-scoped stats, charts, recent activity */
+  dashboard: () => apiFetch<BuyerDashboardResponse>("/api/dashboard/"),
+ 
+  /** GET /api/orders/?page=:p&page_size=:n&ordering=-created_at */
+  orders: (page = 1, pageSize = 10, status?: string) => {
+    const p = new URLSearchParams({ page: String(page), page_size: String(pageSize), ordering: "-created_at" });
+    if (status) p.set("status", status);
+    return apiFetch<OrdersResponse>(`/api/orders/?${p.toString()}`);
+  },
+ 
+  /** GET /api/orders/:id/ */
+  orderDetail: (id: number) => apiFetch<ApiOrder>(`/api/orders/${id}/`),
+ 
+  /**
+   * GET /api/orders/:id/invoice/
+   * Returns a PDF blob — fetch manually in the component to handle Blob.
+   */
+  invoiceUrl: (id: number) => `/api/orders/${id}/invoice/`,
+ 
+  /** PATCH /api/orders/:id/ — cancel an order: { status: "cancelled" } */
+  cancelOrder: (id: number) =>
+    apiFetch<ApiOrder>(`/api/orders/${id}/`, {
+      method: "PATCH",
+      body:   JSON.stringify({ status: "cancelled" }),
+    }),
+ 
+  /** GET /api/reviews/my-reviews/ */
+  reviews: (page = 1, pageSize = 10) => {
+    const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+    return apiFetch<ReviewsResponse>(`/api/reviews/my-reviews/?${p.toString()}`);
+  },
 };

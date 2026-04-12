@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ProductManagementPage from '@/components/Inventory/InventoryClientPage';
+import ProductManagementPage from '@/components/Inventory/Products/InventoryClientPage';
 
 export const metadata: Metadata = {
   title:       'Product Management | AgriManager',

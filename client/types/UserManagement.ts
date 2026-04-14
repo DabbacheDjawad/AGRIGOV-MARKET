@@ -54,25 +54,25 @@ export interface ApiDashboardResponse {
   };
 }
 
-export interface ApiRevenuePoint {
-  day: string;
+export interface ApiRevenueTrendPoint {
+  month: string;
   total: number;
 }
 
-export interface ApiOrderPoint {
-  day: string;
+export interface ApiRegionPerformance {
+  farm__wilaya: string;
+  total: number;
+}
+
+export interface ApiUserDistribution {
+  role: ApiUserRole;
   count: number;
 }
 
-export interface ApiCategoryDistribution {
-  product_item__category_name: string;
-  total: number;
-}
-
 export interface ApiDashboardCharts {
-  revenue_over_time: ApiRevenuePoint[];
-  orders_over_time: ApiOrderPoint[];
-  category_distribution: ApiCategoryDistribution[];
+  revenue_trend: ApiRevenueTrendPoint[];
+  region_performance: ApiRegionPerformance[];
+  user_distribution: ApiUserDistribution[];
 }
 
 export interface ApiTopProduct {

@@ -20,12 +20,12 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    const userCookie = getCookie("role");
-    if (userCookie) setRole(userCookie as UserRole);
-  }, []);
+useEffect(() => {
+  const userCookie = getCookie("role") as UserRole | null;
+  
+  setRole((prev) => (prev !== userCookie ? userCookie : prev));
+}, [pathname]);
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);

@@ -5,10 +5,10 @@ import { UserRole } from "./types/roles";
 const PUBLIC_ROUTES = ["/Login", "/Register", "/not-allowed"];
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
-  FARMER: ["/farmer", "/marketplace" ,"/farmer/profile", "/"],
-  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/buyer/dashboard" , "/"],
-  TRANSPORTER: ["/transporter", "/transporter/profile", "/"],
-  ADMIN: ["/Ministry/dashboard" , "/"],
+  FARMER: ["/farmer", "/marketplace", "/farmer/profile", "/", "/notifications"],  // ← ADD
+  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/buyer/dashboard", "/", "/notifications"],  // ← ADD
+  TRANSPORTER: ["/transporter", "/transporter/profile", "/", "/notifications"],  // ← ADD
+  ADMIN: ["/Ministry/dashboard", "/", "/notifications"],  // ← ADD
 };
 
 export function proxy(req: NextRequest) {
@@ -25,7 +25,8 @@ export function proxy(req: NextRequest) {
     }
     return NextResponse.next();
   }
-const role = roleCookie.value.replace(/"/g, "").trim() as UserRole;
+  
+  const role = roleCookie.value.replace(/"/g, "").trim() as UserRole;
   const lowerRole = role.toLowerCase();
 
   // Handle the special /profile proxy rewrite

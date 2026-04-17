@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ROLE_LINKS, UserRole } from "@/types/roles";
+import NotificationBell from "@/components/common/NotificationBell";  // ← ADD THIS
 
 function getCookie(name: string) {
   if (typeof document === "undefined") return null;
@@ -25,7 +26,6 @@ export default function Navbar() {
     if (userCookie) setRole(userCookie as UserRole);
   }, []);
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -77,10 +77,8 @@ export default function Navbar() {
 
           {/* 3. Right Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="p-2 rounded-full text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none relative transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2.5 right-2.5 block h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-neutral-900" />
-            </button>
+            {/* ✅ REPLACE static notification button with dynamic NotificationBell */}
+            <NotificationBell />  {/* ← REPLACED */}
 
             <div className="hidden sm:flex items-center gap-3 border-l border-neutral-200 dark:border-neutral-700 pl-4">
               <Image src="/avatar.png" alt="Profile" width={32} height={32} className="h-8 w-8 rounded-full ring-2 ring-primary/10" />

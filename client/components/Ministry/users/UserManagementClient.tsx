@@ -11,9 +11,9 @@ import { ministryApi, ApiError } from '@/lib/api';
 // ─── Rejection Modal ─────────────────────────────────────────────────────────
 
 interface RejectModalProps {
-  username:    string;
-  onConfirm:   (reason: string) => void;
-  onCancel:    () => void;
+  username: string;
+  onConfirm: (reason: string) => void;
+  onCancel: () => void;
   isRejecting: boolean;
 }
 
@@ -22,21 +22,14 @@ function RejectModal({ username, onConfirm, onCancel, isRejecting }: RejectModal
   const charLimit = 500;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="reject-modal-title"
-    >
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-rose-600 text-xl">cancel</span>
           </div>
           <div>
-            <h2 id="reject-modal-title" className="font-bold text-lg">
-              Reject Registration
-            </h2>
+            <h2 className="font-bold text-lg">Reject Registration</h2>
             <p className="text-sm text-slate-500 mt-0.5">
               You are about to reject <span className="font-semibold">{username}</span>.
               Please provide a reason.
@@ -75,9 +68,7 @@ function RejectModal({ username, onConfirm, onCancel, isRejecting }: RejectModal
             className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isRejecting ? (
-              <span className="material-symbols-outlined text-base animate-spin">
-                progress_activity
-              </span>
+              <span className="material-symbols-outlined text-base animate-spin">progress_activity</span>
             ) : (
               <span className="material-symbols-outlined text-base">cancel</span>
             )}
@@ -89,68 +80,63 @@ function RejectModal({ username, onConfirm, onCancel, isRejecting }: RejectModal
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function UserManagementPage() {
   const router = useRouter();
 
-  // ── Data state ─────────────────────────────────────────────────────────────
-  const [overview,      setOverview]      = useState<ApiDashboardOverview | null>(null);
-  const [users,         setUsers]         = useState<ApiPendingUser[]>([]);
-  const [totalCount,    setTotalCount]    = useState(0);
+  // State
+  const [overview, setOverview] = useState<ApiDashboardOverview | null>(null);
+  const [users, setUsers] = useState<ApiPendingUser[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   const [isLoadingDash, setIsLoadingDash] = useState(true);
-  const [isLoadingUsers,setIsLoadingUsers]= useState(true);
-  const [dashError,     setDashError]     = useState<string | null>(null);
-  const [usersError,    setUsersError]    = useState<string | null>(null);
-
-  // ── UI state ───────────────────────────────────────────────────────────────
-  const [activeFilter,  setActiveFilter]  = useState<RoleFilter>('All');
-  const [currentPage,   setCurrentPage]   = useState(1);
-  const [toast,         setToast]         = useState<string | null>(null);
-
-  // ── Rejection modal ────────────────────────────────────────────────────────
-  const [rejectTarget,  setRejectTarget]  = useState<ApiPendingUser | null>(null);
-  const [isRejecting,   setIsRejecting]   = useState(false);
-
-  // ── Approve state ──────────────────────────────────────────────────────────
-  const [approvingId,   setApprovingId]   = useState<number | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [dashError, setDashError] = useState<string | null>(null);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<RoleFilter>('All');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'validated'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [toast, setToast] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<ApiPendingUser | null>(null);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const cancelledRef = useRef(false);
 
-  // ── fetch dashboard stats ──────────────────────────────────────────────────
-useEffect(() => {
-  setIsLoadingDash(true);
-  ministryApi.dashboard()
-    .then((res) => {
-      setOverview(res.overview); 
-    })
-    .catch((err: unknown) => {
-      console.error("Dashboard Error:", err); // Log this to see the real error in console
-      setDashError(err instanceof ApiError ? err.message : 'Failed to load stats.');
-    })
-    .finally(() => setIsLoadingDash(false));
-}, []);
+  // Fetch dashboard stats
+  useEffect(() => {
+    setIsLoadingDash(true);
+    ministryApi.dashboard()
+      .then((res) => {
+        setOverview(res.overview);
+      })
+      .catch((err: unknown) => {
+        console.error('Dashboard Error:', err);
+        setDashError(err instanceof ApiError ? err.message : 'Failed to load stats.');
+      })
+      .finally(() => setIsLoadingDash(false));
+  }, []);
 
-  // ── fetch pending users ────────────────────────────────────────────────────
-  const fetchUsers = useCallback(() => {
+  // Fetch ALL users
+  const fetchAllUsers = useCallback(() => {
     cancelledRef.current = false;
     setIsLoadingUsers(true);
     setUsersError(null);
 
-    const offset = (currentPage - 1) * PAGE_SIZE;
-    ministryApi.pendingUsers(PAGE_SIZE, offset)
+    ministryApi.list(currentPage, PAGE_SIZE)
       .then((res) => {
         if (cancelledRef.current) return;
-        // Handle the nested envelope: results.data[]
-        const data = Array.isArray(res.results)
-          ? (res.results as unknown as ApiPendingUser[])
-          : res.results.data;
-        setUsers(data);
-        setTotalCount(res.count);
+        setUsers(res.results || []);
+        setTotalCount(res.count || 0);
+        
+        const pending = (res.results || []).filter(user => !user.is_verified).length;
+        setPendingCount(pending);
       })
       .catch((err: unknown) => {
         if (cancelledRef.current) return;
-        setUsersError(err instanceof ApiError ? err.message : 'Failed to load pending users.');
+        setUsersError(err instanceof ApiError ? err.message : 'Failed to load users.');
       })
       .finally(() => {
         if (!cancelledRef.current) setIsLoadingUsers(false);
@@ -159,36 +145,35 @@ useEffect(() => {
     return () => { cancelledRef.current = true; };
   }, [currentPage]);
 
-  useEffect(fetchUsers, [fetchUsers]);
+  useEffect(fetchAllUsers, [fetchAllUsers]);
 
-  // ── approve ────────────────────────────────────────────────────────────────
+  // Approve user
   const handleApprove = useCallback(async (id: number) => {
     setApprovingId(id);
     try {
       await ministryApi.validateUser(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      setTotalCount((c) => Math.max(0, c - 1));
+      fetchAllUsers();
       showToast('User approved successfully.');
     } catch (err) {
       showToast(err instanceof ApiError ? err.message : 'Failed to approve user.', true);
     } finally {
       setApprovingId(null);
     }
-  }, []);
+  }, [fetchAllUsers]);
 
-  // ── reject ─────────────────────────────────────────────────────────────────
+  // Open reject modal
   const handleOpenReject = useCallback((id: number) => {
     const user = users.find((u) => u.id === id);
     if (user) setRejectTarget(user);
   }, [users]);
 
+  // Confirm reject
   const handleConfirmReject = useCallback(async (reason: string) => {
     if (!rejectTarget) return;
     setIsRejecting(true);
     try {
       await ministryApi.rejectUser(rejectTarget.id, reason);
-      setUsers((prev) => prev.filter((u) => u.id !== rejectTarget.id));
-      setTotalCount((c) => Math.max(0, c - 1));
+      fetchAllUsers();
       showToast(`${rejectTarget.username} has been rejected.`);
       setRejectTarget(null);
     } catch (err) {
@@ -196,32 +181,59 @@ useEffect(() => {
     } finally {
       setIsRejecting(false);
     }
-  }, [rejectTarget]);
+  }, [rejectTarget, fetchAllUsers]);
 
-  // ── view docs → navigate to detail page ───────────────────────────────────
+  // Delete user
+  const handleDeleteUser = useCallback(async (id: number) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+    
+    setDeletingId(id);
+    try {
+      await ministryApi.deleteUser(id);
+      fetchAllUsers();
+      showToast('User deleted successfully.');
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : 'Failed to delete user.', true);
+    } finally {
+      setDeletingId(null);
+    }
+  }, [fetchAllUsers]);
+
+  // View docs
   const handleViewDocs = useCallback((id: number) => {
     router.push(`/Ministry/dashboard/users/${id}`);
   }, [router]);
 
-  // ── filter ─────────────────────────────────────────────────────────────────
+  // Filter change
   const handleFilterChange = useCallback((filter: RoleFilter) => {
     setActiveFilter(filter);
     setCurrentPage(1);
   }, []);
 
-  // ── toast helper ──────────────────────────────────────────────────────────
-  function showToast(msg: string, _isError = false) {
+  // Status filter change
+  const handleStatusFilterChange = useCallback((filter: 'all' | 'pending' | 'validated') => {
+    setStatusFilter(filter);
+    setCurrentPage(1);
+  }, []);
+
+  // Toast helper
+  const showToast = (msg: string, _isError = false) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
-  }
+  };
 
-  // ── render ─────────────────────────────────────────────────────────────────
+  // Filter users by role
+  const filteredUsers = activeFilter === 'All'
+    ? users
+    : users.filter(user => user.role === activeFilter.toUpperCase());
+
   return (
     <div className="flex h-screen overflow-hidden font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
       <main className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-8">
 
-          {/* Dashboard error */}
           {dashError && (
             <div className="mb-6 flex items-center gap-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">
               <span className="material-symbols-outlined shrink-0">error</span>
@@ -231,37 +243,41 @@ useEffect(() => {
 
           <UserStatCards
             overview={overview}
-            pendingCount={totalCount}
+            pendingCount={pendingCount}
             isLoading={isLoadingDash}
           />
 
-          {/* Users error */}
           {usersError && (
             <div className="mb-6 flex items-start gap-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">
               <span className="material-symbols-outlined mt-0.5 shrink-0">error</span>
               <span className="flex-1">{usersError}</span>
-              <button onClick={fetchUsers} className="shrink-0 underline font-semibold text-xs">
+              <button onClick={fetchAllUsers} className="shrink-0 underline font-semibold text-xs">
                 Retry
               </button>
             </div>
           )}
 
+          
           <RegistrationTable
-            users={users}
+            users={filteredUsers}
             activeFilter={activeFilter}
+            statusFilter={statusFilter}
             currentPage={currentPage}
             totalCount={totalCount}
             isLoading={isLoadingUsers}
             onFilterChange={handleFilterChange}
+            onStatusFilterChange={handleStatusFilterChange}
             onPageChange={setCurrentPage}
             onViewDocs={handleViewDocs}
             onApprove={handleApprove}
             onReject={handleOpenReject}
+            onDelete={handleDeleteUser}
+            approvingId={approvingId}
+            deletingId={deletingId}
           />
         </div>
       </main>
 
-      {/* Rejection modal */}
       {rejectTarget && (
         <RejectModal
           username={rejectTarget.username}
@@ -271,13 +287,8 @@ useEffect(() => {
         />
       )}
 
-      {/* Toast */}
       {toast && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50 animate-fade-in"
-        >
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50">
           <span className="material-symbols-outlined text-primary text-base">check_circle</span>
           <span className="font-medium text-sm">{toast}</span>
         </div>

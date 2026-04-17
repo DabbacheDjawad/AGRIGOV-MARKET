@@ -18,7 +18,7 @@ import type {
 } from "@/types/Profile";
 import { PaginatedProducts } from "@/types/Inventory";
 import type { OrdersApiResponse, ApiOrderStatus } from "@/types/Orders";
-import type { ApiDashboardResponse, ApiPendingUsersResponse } from "@/types/UserManagement";
+import type { ApiDashboardResponse, ApiPendingUsersResponse, ApiPendingUser } from "@/types/UserManagement";
 import type { ApiUserDetailResponse, ApiValidateResponse, ApiRejectResponse } from "@/types/UserValidation";
 
 import type { 
@@ -219,10 +219,10 @@ export const cartApi = {
 
   /** PATCH /api/cart/update_quantity/ — { item_id, quantity } */
   updateQuantity: (body: UpdateQuantityRequest) =>
-    apiFetch<CartResponse>("/api/cart/update_quantity/", {
-      method: "PATCH",
-      body:   JSON.stringify(body),
-    }),
+  apiFetch<CartResponse>("/api/cart/update_quantity/", {  // ← Expects CartResponse
+    method: "PATCH",
+    body: JSON.stringify(body),
+  }),
 
   /** DELETE /api/cart/remove_item/ — { item_id } */
   removeItem: (body: RemoveItemRequest) =>
@@ -307,38 +307,54 @@ export const inventoryApi = {
 
 
 // ─── Ministry / Admin ─────────────────────────────────────────────────────────
- 
+
+export interface ApiUsersResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ApiPendingUser[];
+}
+
+// ─── Ministry / Admin ─────────────────────────────────────────────────────────
+
 export const ministryApi = {
   /**
    * GET /api/dashboard/
    * Returns overview stats and recent activity for the admin.
    */
   dashboard: () => apiFetch<ApiDashboardResponse>("/api/dashboard/"),
- 
+
+  /**
+   * GET /api/users/ — paginated list of ALL users
+   */
+  list: (page = 1, pageSize = 10) => {
+    const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+    return apiFetch<ApiUsersResponse>(`/api/users/?${p.toString()}`);
+  },
+
   /**
    * GET /api/users/pending/?limit=:limit&offset=:offset
    * Returns paginated list of users awaiting validation.
-   * Note: the API wraps results in a status envelope: results.data[]
    */
   pendingUsers: (limit = 10, offset = 0) => {
     const p = new URLSearchParams({ limit: String(limit), offset: String(offset) });
     return apiFetch<ApiPendingUsersResponse>(`/api/users/pending/?${p.toString()}`);
   },
- 
+
   /**
    * GET /api/users/:id/
    * Returns full user detail including role-specific profile and documents.
    */
   userDetail: (id: number) =>
     apiFetch<ApiUserDetailResponse>(`/api/users/${id}/`),
- 
+
   /**
    * PATCH /api/users/:id/validate/
    * Ministry approves a user — no body required.
    */
   validateUser: (id: number) =>
     apiFetch<ApiValidateResponse>(`/api/users/${id}/validate/`, { method: "PATCH" }),
- 
+
   /**
    * PATCH /api/users/:id/reject/
    * Ministry rejects a user with a mandatory reason string.
@@ -346,9 +362,18 @@ export const ministryApi = {
   rejectUser: (id: number, reason: string) =>
     apiFetch<ApiRejectResponse>(`/api/users/${id}/reject/`, {
       method: "PATCH",
-      body:   JSON.stringify({ reason }),
+      body: JSON.stringify({ reason }),
     }),
+    /**
+   * DELETE /api/users/:id/delete/
+   * Delete a user.
+   */
+    deleteUser: (id: number) =>
+  apiFetch<{ message: string }>(`/api/users/${id}/delete/`, { method: "DELETE" }),
 };
+
+
+
 
 export const transporterApi = {
   /**
@@ -589,4 +614,24 @@ export const buyerApi = {
     const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
     return apiFetch<ReviewsResponse>(`/api/reviews/my-reviews/?${p.toString()}`);
   },
+};
+
+
+// ─── Notifications ─────────────────────────────────────────────────
+// Add to api.ts
+
+import type { Notification, NotificationApiResponse } from '@/types/Notifications';
+
+export const notificationApi = {
+  getNotifications: (page = 1) =>
+    apiFetch<NotificationApiResponse>(`/api/notifications/?page=${page}`),
+
+  getUnreadCount: () =>
+    apiFetch<{ unread_count: number }>('/api/notifications/unread-count/'),
+
+  markAsRead: (id: number) =>
+    apiFetch<{ status: string }>(`/api/notifications/${id}/read/`, { method: 'PATCH' }),
+
+  markAllAsRead: () =>
+    apiFetch<{ status: string }>('/api/notifications/read-all/', { method: 'PATCH' }),
 };

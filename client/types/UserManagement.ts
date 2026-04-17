@@ -27,73 +27,18 @@ export function displayRoleToApi(role: RoleFilter): ApiUserRole | null {
 // ─── Dashboard API ────────────────────────────────────────────────────────────
 
 export interface ApiDashboardOverview {
-  revenue_growth: number;
-  avg_rating: number;
   total_users: number;
   new_users_last_30_days: number;
   total_products: number;
   total_orders: number;
-  total_revenue: number;
   monthly_revenue: number;
-  total_reviews: number;
 }
-export interface ApiRecentUser {
-  id:         number;
-  email:      string;
-  role:       ApiUserRole;
-  created_at: string;
-}
-
-export interface ApiDashboardResponse {
-  role: string;
-  data: {
-    overview: ApiDashboardOverview;
-    recent_activity: {
-      recent_users: ApiRecentUser[];
-    };
-  };
-}
-
-export interface ApiRevenuePoint {
-  day: string;
-  total: number;
-}
-
-export interface ApiOrderPoint {
-  day: string;
-  count: number;
-}
-
-export interface ApiCategoryDistribution {
-  product_item__category_name: string;
-  total: number;
-}
-
-export interface ApiDashboardCharts {
-  revenue_over_time: ApiRevenuePoint[];
-  orders_over_time: ApiOrderPoint[];
-  category_distribution: ApiCategoryDistribution[];
-}
-
-export interface ApiTopProduct {
-  id: number;
-  ministry_product__name: string;
-  total_sold: number | null; // 🔥 FIX
-}
-
-export interface ApiDashboardInsights {
-  top_products: ApiTopProduct[];
-  low_stock_products: number;
-}
-
 
 export interface ApiDashboardResponse {
   overview: ApiDashboardOverview;
-  charts: ApiDashboardCharts;
-  insights: ApiDashboardInsights;
 }
 
-// ─── Pending Users API ────────────────────────────────────────────────────────
+// ─── Users API ────────────────────────────────────────────────────────────────
 
 export interface ApiPendingUser {
   id:          number;
@@ -106,7 +51,13 @@ export interface ApiPendingUser {
   created_at:  string;
 }
 
-/** The backend wraps results in a status envelope instead of a plain array */
+export interface ApiUsersResponse {
+  count:    number;
+  next:     string | null;
+  previous: string | null;
+  results:  ApiPendingUser[];
+}
+
 export interface ApiPendingUsersResponse {
   count:    number;
   next:     string | null;

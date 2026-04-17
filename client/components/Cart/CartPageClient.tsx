@@ -92,18 +92,18 @@ const handleQuantityChange = useCallback(async (productId: number, qty: number) 
     } : prev
   );
 
-  try {
+ try {
     const updated = await cartApi.updateQuantity({ product_id: productId, quantity: qty });
     
     if (updated && Array.isArray(updated.items)) {
-      setCart(updated);
+      setCart(updated);  // ← This expects the full cart object
     } else {
-      await loadCart();
+      await loadCart();  // ← Falls back to reloading
     }
   } catch (err) {
     await loadCart();
-    showToast("Failed to update quantity.");
   }
+  console.log(`Updated product ${productId} to quantity ${qty}`);
 }, [cart, loadCart]);
 
   // ── Remove item ─────────────────────────────────────────────────────────────

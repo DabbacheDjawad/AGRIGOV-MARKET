@@ -12,7 +12,7 @@ interface Props {
   product: ApiProduct;
 }
 
-const MIN_ORDER = 1;
+const MIN_ORDER = 0;
 
 export default function PurchaseCard({ product }: Props) {
   const [quantity,    setQuantity]    = useState(MIN_ORDER);

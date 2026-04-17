@@ -1,9 +1,9 @@
 import type { ApiDashboardOverview } from '@/types/UserManagement';
 
 interface Props {
-  overview:     ApiDashboardOverview | null;
+  overview: ApiDashboardOverview | null;
   pendingCount: number;
-  isLoading:    boolean;
+  isLoading: boolean;
 }
 
 function SkeletonCard() {
@@ -32,37 +32,36 @@ export default function UserStatCards({ overview, pendingCount, isLoading }: Pro
 
   const cards = [
     {
-      label:      'Total Users',
-      value:      overview.total_users.toLocaleString(),
-      trend:      `+${overview.new_users_last_30_days} this month`,
-      // Normalizing progress: assuming a goal of 100 users for the progress bar
+      label: 'Total Users',
+      value: overview.total_users.toLocaleString(),
+      trend: `+${overview.new_users_last_30_days} this month`,
       barPercent: Math.min((overview.total_users / 100) * 100, 100),
-      highlight:  false,
-      footer:     'Registered accounts'
+      highlight: false,
+      footer: 'Registered accounts',
     },
     {
-      label:      'Total Products',
-      value:      overview.total_products.toLocaleString(),
-      trend:      'Active listings',
+      label: 'Total Products',
+      value: overview.total_products.toLocaleString(),
+      trend: 'Active listings',
       barPercent: Math.min((overview.total_products / 50) * 100, 100),
-      highlight:  false,
-      footer:     'Live in market'
+      highlight: false,
+      footer: 'Live in market',
     },
     {
-      label:      'Monthly Revenue',
-      value:      `${overview.monthly_revenue.toLocaleString('fr-DZ')} DZD`,
-      trend:      `${overview.total_orders} orders`,
+      label: 'Monthly Revenue',
+      value: `${overview.monthly_revenue.toLocaleString('fr-DZ')} DZD`,
+      trend: `${overview.total_orders} orders`,
       barPercent: Math.min((overview.monthly_revenue / 100000) * 100, 100),
-      highlight:  false,
-      footer:     'Current month'
+      highlight: false,
+      footer: 'Current month',
     },
     {
-      label:      'Pending Requests',
-      value:      pendingCount.toLocaleString(),
-      trend:      'URGENT',
+      label: 'Pending Requests',
+      value: pendingCount.toLocaleString(),
+      trend: 'URGENT',
       barPercent: 0,
-      highlight:  true,
-      footer:     'Requires validation'
+      highlight: true,
+      footer: 'Requires validation',
     },
   ];
 

@@ -11,11 +11,14 @@ import type { LoginPayload } from "@/types/Auth";
 
 function friendlyError(status: number, msg: string): string {
   if (status === 401 || status === 400) return "Incorrect email/phone or password.";
-  if (status === 403) return msg.toLowerCase().includes("verif")
-    ? "Your account is not yet verified. Check your email."
-    : "Your account has been suspended. Contact support.";
+  if (status === 403) {
+    if (msg.toLowerCase().includes("pending validation") || msg.toLowerCase().includes("ministry")) {
+      return "Your account is pending validation by the Ministry. Please wait for approval.";
+    }
+    return "Your account has been suspended. Contact support.";
+  }
   if (status === 429) return "Too many attempts. Please wait a few minutes.";
-  if (status >= 500)  return "Server error. Please try again shortly.";
+  if (status >= 500) return "Server error. Please try again shortly.";
   return msg || "Something went wrong.";
 }
 

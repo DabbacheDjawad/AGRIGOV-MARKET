@@ -1,87 +1,158 @@
 import type { ApiPendingUser, RoleFilter } from '@/types/UserManagement';
 import { ROLE_BADGE_STYLES, ROLE_FILTERS, PAGE_SIZE, apiRoleToDisplay } from '@/types/UserManagement';
 
+type StatusFilter = 'all' | 'pending' | 'validated';
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-DZ', {
     month: 'short',
-    day:   '2-digit',
-    year:  'numeric',
+    day: '2-digit',
+    year: 'numeric',
   });
 }
 
 function SkeletonRow() {
   return (
     <tr className="animate-pulse">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <td key={i} className="px-6 py-4">
-          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
-          {i === 1 && <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded w-1/2 mt-2" />}
-        </td>
-      ))}
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-full bg-slate-200 dark:bg-slate-700" />
+          <div className="space-y-2">
+            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-24" />
+            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded w-32" />
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-20" />
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-24" />
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-16" />
+      </td>
+      <td className="px-6 py-4 text-right">
+        <div className="flex justify-end gap-2">
+          <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded" />
+        </div>
+      </td>
     </tr>
   );
 }
 
 interface Props {
-  users:          ApiPendingUser[];
-  activeFilter:   RoleFilter;
-  currentPage:    number;
-  totalCount:     number;
-  isLoading:      boolean;
+  users: ApiPendingUser[];
+  activeFilter: RoleFilter;
+  statusFilter: StatusFilter;
+  currentPage: number;
+  totalCount: number;
+  isLoading: boolean;
   onFilterChange: (filter: RoleFilter) => void;
-  onPageChange:   (page: number) => void;
-  onViewDocs:     (id: number) => void;
-  onApprove:      (id: number) => void;
-  onReject:       (id: number) => void;
+  onStatusFilterChange: (filter: StatusFilter) => void;
+  onPageChange: (page: number) => void;
+  onViewDocs: (id: number) => void;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
+  onDelete: (id: number) => void;
+  approvingId?: number | null;
+  deletingId?: number | null;
 }
 
 export default function RegistrationTable({
-  users, activeFilter, currentPage, totalCount, isLoading,
-  onFilterChange, onPageChange, onViewDocs, onApprove, onReject,
+  users,
+  activeFilter,
+  statusFilter,
+  currentPage,
+  totalCount,
+  isLoading,
+  onFilterChange,
+  onStatusFilterChange,
+  onPageChange,
+  onViewDocs,
+  onApprove,
+  onReject,
+  onDelete,
+  approvingId,
+  deletingId,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const offset     = (currentPage - 1) * PAGE_SIZE;
-  const start      = totalCount === 0 ? 0 : offset + 1;
-  const end        = Math.min(offset + PAGE_SIZE, totalCount);
+  const offset = (currentPage - 1) * PAGE_SIZE;
+  const start = totalCount === 0 ? 0 : offset + 1;
+  const end = Math.min(offset + PAGE_SIZE, totalCount);
 
-  // Client-side role filter
-  const filtered = activeFilter === 'All'
+  // Filter by role
+  const roleFiltered = activeFilter === 'All'
     ? users
     : users.filter((u) => apiRoleToDisplay(u.role) === activeFilter);
+
+  // Filter by status (pending / validated)
+  const filtered = roleFiltered.filter((user) => {
+    if (statusFilter === 'pending') return !user.is_verified;
+    if (statusFilter === 'validated') return user.is_verified;
+    return true; // 'all'
+  });
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       {/* Toolbar */}
       <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
-        <h3 className="text-lg font-bold">Registration Requests</h3>
+        <h3 className="text-lg font-bold">All Users</h3>
 
         <div className="flex items-center gap-3">
-          <div
-            role="tablist"
-            aria-label="Filter by role"
-            className="flex rounded-lg border border-slate-200 dark:border-slate-800 p-1 bg-slate-50 dark:bg-slate-800/50"
-          >
+          {/* Role Filter */}
+          <div className="flex rounded-lg border border-slate-200 dark:border-slate-800 p-1 bg-slate-50 dark:bg-slate-800/50">
             {ROLE_FILTERS.map((filter) => (
               <button
                 key={filter}
-                role="tab"
-                aria-pressed={activeFilter === filter}
                 onClick={() => onFilterChange(filter)}
-                className={
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
                   activeFilter === filter
-                    ? 'px-3 py-1 rounded-md bg-white dark:bg-slate-700 shadow-sm text-xs font-bold transition-all'
-                    : 'px-3 py-1 rounded-md text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary transition-colors'
-                }
+                    ? 'bg-white dark:bg-slate-700 shadow-sm font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-primary'
+                }`}
               >
                 {filter}
               </button>
             ))}
           </div>
 
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-            <span className="material-symbols-outlined text-sm">filter_list</span>
-            <span>Filter</span>
-          </button>
+          {/* Status Filter */}
+          <div className="flex rounded-lg border border-slate-200 dark:border-slate-800 p-1 bg-slate-50 dark:bg-slate-800/50">
+            <button
+              onClick={() => onStatusFilterChange('all')}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                statusFilter === 'all'
+                  ? 'bg-white dark:bg-slate-700 shadow-sm font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-primary'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => onStatusFilterChange('pending')}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                statusFilter === 'pending'
+                  ? 'bg-white dark:bg-slate-700 shadow-sm font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-primary'
+              }`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => onStatusFilterChange('validated')}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                statusFilter === 'validated'
+                  ? 'bg-white dark:bg-slate-700 shadow-sm font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-primary'
+              }`}
+            >
+              Validated
+            </button>
+          </div>
         </div>
       </div>
 
@@ -106,13 +177,13 @@ export default function RegistrationTable({
                   <span className="material-symbols-outlined text-3xl block mb-2 opacity-40">
                     inbox
                   </span>
-                  No pending requests match the current filter.
+                  No users match the current filters.
                 </td>
               </tr>
             ) : (
               filtered.map((user) => {
                 const displayRole = apiRoleToDisplay(user.role);
-                const roleBadge   = displayRole ? ROLE_BADGE_STYLES[displayRole] : '';
+                const roleBadge = displayRole ? ROLE_BADGE_STYLES[displayRole] : '';
 
                 return (
                   <tr
@@ -155,36 +226,78 @@ export default function RegistrationTable({
 
                     {/* Status */}
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="size-2 rounded-full bg-amber-500" />
-                        <span className="text-sm font-medium text-amber-600 dark:text-amber-500">
-                          Pending
-                        </span>
-                      </div>
+                      {user.is_verified ? (
+                        <div className="flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-green-500" />
+                          <span className="text-sm font-medium text-green-600 dark:text-green-500">
+                            Validated
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-amber-500" />
+                          <span className="text-sm font-medium text-amber-600 dark:text-amber-500">
+                            Pending
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Actions */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        {/* View Docs */}
                         <button
                           onClick={() => onViewDocs(user.id)}
                           className="px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                         >
                           View Docs
                         </button>
+
+                        {/* Approve - Only for pending users */}
+                        {!user.is_verified && (
+                          <button
+                            onClick={() => onApprove(user.id)}
+                            disabled={approvingId === user.id}
+                            className={`p-1.5 rounded-lg transition-colors flex items-center justify-center min-w-[32px] ${
+                              approvingId === user.id
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 cursor-not-allowed'
+                                : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                            }`}
+                          >
+                            {approvingId === user.id ? (
+                              <span className="material-symbols-outlined text-xl animate-spin">
+                                progress_activity
+                              </span>
+                            ) : (
+                              <span className="material-symbols-outlined text-xl">check_circle</span>
+                            )}
+                          </button>
+                        )}
+
+                        {/* Reject - Only for pending users */}
+                        {!user.is_verified && (
+                          <button
+                            onClick={() => onReject(user.id)}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-xl">cancel</span>
+                          </button>
+                        )}
+
+                        {/* Delete - For all users */}
                         <button
-                          aria-label={`Approve ${user.username}`}
-                          onClick={() => onApprove(user.id)}
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                          onClick={() => onDelete(user.id)}
+                          disabled={deletingId === user.id}
+                          className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
                         >
-                          <span className="material-symbols-outlined text-xl">check_circle</span>
-                        </button>
-                        <button
-                          aria-label={`Reject ${user.username}`}
-                          onClick={() => onReject(user.id)}
-                          className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-xl">cancel</span>
+                          {deletingId === user.id ? (
+                            <span className="material-symbols-outlined text-xl animate-spin">
+                              progress_activity
+                            </span>
+                          ) : (
+                            <span className="material-symbols-outlined text-xl">delete</span>
+                          )}
                         </button>
                       </div>
                     </td>
@@ -200,7 +313,7 @@ export default function RegistrationTable({
       <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Showing <span className="font-bold">{start}–{end}</span> of{' '}
-          <span className="font-bold">{totalCount}</span> pending requests
+          <span className="font-bold">{totalCount}</span> users
         </p>
         <div className="flex gap-2">
           <button

@@ -63,6 +63,30 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data["user"]
+        
+        # ✅ Check if user is validated (for farmers, transporters, buyers)
+        if user.role in ["FARMER", "TRANSPORTER", "BUYER"]:
+            is_validated = False
+            
+            # Check validation status based on role
+            if user.role == "FARMER" and hasattr(user, 'farmer_profile'):
+                is_validated = user.farmer_profile.is_validated
+            elif user.role == "TRANSPORTER" and hasattr(user, 'transporter_profile'):
+                is_validated = user.transporter_profile.is_validated
+            elif user.role == "BUYER" and hasattr(user, 'buyer_profile'):
+                is_validated = user.buyer_profile.is_validated
+            
+            # Block login if not validated
+            if not is_validated:
+                return Response(
+                    {
+                        "status": "error",
+                        "code": 403,
+                        "message": "Your account is pending validation by the Ministry. Please wait for approval."
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
         refresh = RefreshToken.for_user(user)
 
         return Response(
@@ -628,3 +652,15 @@ class AllUsersView(generics.ListAPIView):
     permission_classes = [IsAdmin]
     serializer_class = UserSerializer
     queryset = User.objects.all().order_by('-created_at')
+
+class DeleteUserView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=404)
+
+        user.delete()
+        return Response({"message": f"User {user.email} deleted successfully"}, status=200)

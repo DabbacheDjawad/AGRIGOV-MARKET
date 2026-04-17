@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'categories',
     'official_prices',
     'regions',
+    'notifications',
     
 ]
 

@@ -599,9 +599,8 @@ export const buyerApi = {
 
 // ─── Notifications ─────────────────────────────────────────────────
 // Add to api.ts
-
 import type { Notification, NotificationApiResponse } from '@/types/Notifications';
-
+import type { MinistryProductsResponse, MinistryProduct, MinistryProductPayload } from "@/types/MinistryProduct";
 export const notificationApi = {
   getNotifications: (page = 1) =>
     apiFetch<NotificationApiResponse>(`/api/notifications/?page=${page}`),
@@ -614,7 +613,7 @@ export const notificationApi = {
 
   markAllAsRead: () =>
     apiFetch<{ status: string }>('/api/notifications/read-all/', { method: 'PATCH' }),
-import type { MinistryProductsResponse, MinistryProduct, MinistryProductPayload } from "@/types/MinistryProduct";
+};
 export const ministryProductApi = {
   /**
    * GET /api/products/ministry/

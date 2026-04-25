@@ -621,7 +621,6 @@ export const buyerApi = {
 // Add to api.ts
 import type { Notification, NotificationApiResponse } from '@/types/Notifications';
 import type { MinistryProductsResponse, MinistryProduct, MinistryProductPayload } from "@/types/MinistryProduct";
-import { log } from "console";
 export const notificationApi = {
   getNotifications: (page = 1) =>
     apiFetch<NotificationApiResponse>(`/api/notifications/?page=${page}`),

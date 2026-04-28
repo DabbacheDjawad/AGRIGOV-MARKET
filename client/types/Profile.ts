@@ -20,6 +20,7 @@ export interface ApiUser {
 // ── Role-specific profile shapes ─────────────────────────────────────────────
 
 export interface FarmerProfile {
+  name:                string;
   age:                 number | null;
   wilaya:              string;
   baladiya:            string;

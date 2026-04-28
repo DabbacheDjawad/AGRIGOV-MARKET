@@ -8,7 +8,7 @@ import Breadcrumb from "@/components/Cart/BreadCrumb";
 import { formatOrderDate, parseBuyerEmail, type ApiOrder, type ApiOrderStatus, type StatusFilter } from "@/types/Orders";
 import { farmerOrderApi, ApiError } from "@/lib/api";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const crumbs = [
   { label: "Home",      href: "#" },
@@ -80,8 +80,6 @@ function exportOrdersCSV(orders: ApiOrder[]) {
         if (cancelledRef.current) return;
         setOrders(data.results);
         setTotalCount(data.count);
-        // Keep selection in sync: update if selected order is still in page,
-        // or auto-select first result on first load
         setSelectedOrder((prev) => {
           if (!prev) return data.results[0] ?? null;
           const fresh = data.results.find((o) => o.id === prev.id);
@@ -89,6 +87,8 @@ function exportOrdersCSV(orders: ApiOrder[]) {
         });
       })
       .catch((err: unknown) => {
+        console.log(err);
+        
         if (cancelledRef.current) return;
         setLoadError(
           err instanceof ApiError

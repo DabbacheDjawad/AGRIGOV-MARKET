@@ -3,16 +3,30 @@ from .models import Order, OrderItem, ProductItem
 from products.serializers import ProductSerializer
 
 class ProductItemSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(source="product.id", read_only=True)
+    has_review = serializers.SerializerMethodField()
     class Meta:
         model = ProductItem
         fields = [
             "id",
+            "product_id",
             "title",
             "description",
             "season",
             "unit_price",
             "category_name",
+            "has_review",
         ]
+    def get_has_review(self, obj):
+        request = self.context.get("request")
+        if not request:
+            return False
+
+        user = request.user
+        if not hasattr(user, "buyer_profile"):
+            return False
+
+        return obj.product.reviews.filter(buyer=user.buyer_profile).exists()
         
         
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -46,6 +60,22 @@ class OrderSerializer(serializers.ModelSerializer):
             'created_at',
             'items',
             'allowed_statuses'
+        ]
+
+    def get_allowed_statuses(self, obj):
+        request = self.context.get("request")
+        
+        if not request or not request.user:
+            return []
+
+        user = request.user
+
+        possible = obj.VALID_TRANSITIONS.get(obj.status, [])
+
+        return [
+            status
+            for status in possible
+            if obj.can_user_change_status(user, status)
         ]
 
 # CHECKOUT SERIALIZER

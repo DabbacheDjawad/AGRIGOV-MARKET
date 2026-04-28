@@ -39,11 +39,13 @@ export interface BuyerDashboardResponse {
 
 export interface OrderProduct {
   id:            number;
+  product_id:    number;
   title:         string;
   description:   string;
   season:        string;
   unit_price:    string;
   category_name: string | null;
+  has_review: boolean;
 }
 
 export interface OrderItem {

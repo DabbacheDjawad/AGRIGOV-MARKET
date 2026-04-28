@@ -171,6 +171,7 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         model = TransporterProfile
         fields = [
             "age",
+            "wilaya",
             "profile_image",
             "driver_license_image",
             "grey_card_image",

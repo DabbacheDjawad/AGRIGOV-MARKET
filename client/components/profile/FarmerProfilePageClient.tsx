@@ -172,6 +172,7 @@ export default function FarmerProfilePage() {
   const [profile,   setProfile]   = useState<FarmerProfile>({
     age: null, wilaya: "", baladiya: "", farm_size: null, address: "",
     farmer_card_image: null, national_id_image: null, profile_image: null,
+    name: ""
   });
   const [extras,    setExtras]    = useState<FarmerExtras>({ farms_count: 0 });
   const [userForm,  setUserForm]  = useState<EditableUserFields>({ email: "", username: "", phone: "" });

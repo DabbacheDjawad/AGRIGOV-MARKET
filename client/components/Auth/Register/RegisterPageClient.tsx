@@ -42,7 +42,7 @@ const INITIAL_BUYER: BuyerProfileState = {
 };
 
 const INITIAL_TRANSPORTER: TransporterProfileState = {
-  age: "", vehicule_type: "", vehicule_model: "", vehicule_year: "", vehicule_capacity: "",
+  age: "", vehicule_type: "", vehicule_model: "", vehicule_year: "", vehicule_capacity: "",wilaya: "",
   profile_image:        null,
   driver_license_image: null,
   grey_card_image:      null,
@@ -92,6 +92,7 @@ function validateProfile(
   }
   if (role === "TRANSPORTER") {
     if (!t.age || Number(t.age) < 18)  return "Please enter a valid age (18+).";
+    if (!t.wilaya)                     return "Please select your wilaya.";
     if (!t.vehicule_type)              return "Vehicle type is required.";
     if (!t.vehicule_model.trim())      return "Vehicle model is required.";
     if (!t.vehicule_year)              return "Vehicle year is required.";
@@ -165,6 +166,7 @@ async function submitTransporterProfile(form: TransporterProfileState) {
   const fd = new FormData();
   fd.append("age",               form.age);
   fd.append("vehicle_type",      form.vehicule_type);
+  fd.append("wilaya",            form.wilaya);
   fd.append("vehicle_model",     form.vehicule_model);
   fd.append("vehicle_year",      form.vehicule_year);
   fd.append("vehicle_capacity",  form.vehicule_capacity);
@@ -308,7 +310,7 @@ export default function RegistrationPage() {
                       )}
                     </div>
 
-                    <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                    <div className="pt-6 border-t border-gray-100 max-sm:gap-4 flex items-center justify-between">
                       <button
                         type="button"
                         onClick={handleBack}
@@ -325,7 +327,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={handleContinue}
                         disabled={isLoading}
-                        className="group inline-flex items-center gap-2 px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="group inline-flex items-center max-sm:p-1! max-sm:text-[12px] gap-2 px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {isLoading ? (
                           <>

@@ -70,6 +70,7 @@ export interface BuyerProfileState {
 /** Step 3 — transporter */
 export interface TransporterProfileState {
   age:                  string;
+  wilaya:               string;
   profile_image:        File | null;   // avatar — required by backend
   vehicule_type:        string;
   vehicule_model:       string;

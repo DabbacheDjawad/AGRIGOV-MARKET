@@ -82,7 +82,7 @@ export function buildProductParams(
   search: string,
   sort: SortOption,
   page: number,
-  pageSize = 12,
+  pageSize = 10,
 ): string {
   const p = new URLSearchParams();
   if (search.trim())          p.set("search",     search.trim());
@@ -295,11 +295,11 @@ export const inventoryApi = {
  
   /** DELETE /api/products/{id}/ */
   delete: (id: number) =>
-    apiFetch<void>(`/api/products/${id}/`, { method: "DELETE" }),
+    apiFetch<void>(`/api/products/${id}/delete/`, { method: "DELETE" }),
  
   /** PATCH /api/products/{id}/ — e.g. toggle in_stock */
   patch: (id: number, body: Record<string, unknown>) =>
-    apiFetch(`/api/products/${id}/`, {
+    apiFetch(`/api/products/${id}/update/`, {
       method: "PATCH",
       body:   JSON.stringify(body),
     }),
@@ -451,7 +451,7 @@ export const categoryApi = {
    * GET /api/categories/
    * Returns paginated list of all categories.
    */
-  list: (page = 1, pageSize = 20) => {
+  list: (page = 1, pageSize = 10) => {
     const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
     return apiFetch<CategoriesApiResponse>(`/api/categories/?${p.toString()}`);
   },
@@ -501,7 +501,7 @@ export const officialPriceApi = {
    * GET /api/official-prices/
    * Paginated list of all official prices.
    */
-  list: (page = 1, pageSize = 20) => {
+  list: (page = 1, pageSize = 10) => {
     const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
     return apiFetch<OfficialPricesResponse>(`/api/official-prices/?${p.toString()}`);
   },
@@ -580,6 +580,7 @@ import type {
   OrdersResponse,
   ApiOrder,
   ReviewsResponse,
+  BuyerReview,
 } from "@/types/BuyerDashboard";
  
 export const buyerApi = {
@@ -614,6 +615,13 @@ export const buyerApi = {
     const p = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
     return apiFetch<ReviewsResponse>(`/api/reviews/my-reviews/?${p.toString()}`);
   },
+
+  /** POST /api/reviews/reviews/ */
+createReview: (productId: number, rating: number, comment: string) =>
+  apiFetch<BuyerReview>("/api/reviews/reviews/", {
+    method: "POST",
+    body: JSON.stringify({ product_id: productId, rating, comment }),
+  }),  
 };
 
 
@@ -674,4 +682,11 @@ export const ministryProductApi = {
    */
   delete: (id: number) =>
     apiFetch<void>(`/api/products/ministry/${id}/delete/`, { method: "DELETE" }),
+};
+
+// ─── Farm (current user) ─────────────────────────────────────────────────────
+
+export const farmApi = {
+  /** GET /api/farms/me/ — returns the authenticated farmer's farm */
+  getMyFarm: () => apiFetch<{ results:[{id: number; name: string;}] /* other fields as needed */ }>("/api/farms/me/"),
 };

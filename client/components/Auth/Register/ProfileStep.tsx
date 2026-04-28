@@ -262,8 +262,27 @@ function TransporterForm({ form, onChange }: TransporterProps) {
         />
       </div>
 
+      {/* Wilaya */}
+<div className="space-y-1.5">
+  <label htmlFor="wilaya" className={label}>Wilaya</label>
+  <div className="relative">
+    <select
+      id="wilaya"
+      value={form.wilaya}
+      onChange={(e) => onChange("wilaya", e.target.value)}
+      className={`${field} appearance-none pr-8`}
+    >
+      <option value="">Select Wilaya</option>
+      {WILAYAS.map((w) => <option key={w}>{w}</option>)}
+    </select>
+    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
+      <span className="material-symbols-outlined text-lg">expand_more</span>
+    </span>
+  </div>
+</div>
+
       {/* Capacity */}
-      <div className="md:col-span-2 space-y-1.5">
+      <div className="space-y-1.5">
         <label htmlFor="v-capacity" className={label}>Cargo Capacity (tonnes)</label>
         <input
           id="v-capacity"

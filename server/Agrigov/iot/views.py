@@ -13,6 +13,7 @@ from .serializers import (
     AlertSerializer
 )
 from farms.models import Farm
+from .ai_engine import AgriAIAdvisor
 from missions.permissions import IsFarmer, IsAdmin
 
 
@@ -291,3 +292,62 @@ class ResolveAlertView(APIView):
             return Response({'status': 'success', 'message': 'Alert resolved'})
         except Alert.DoesNotExist:
             return Response({'error': 'Alert not found'}, status=404)
+        
+class AIRecommendationView(APIView):
+    """
+    GET /api/iot/recommendations/
+    Get 100% AI-powered recommendations
+    """
+    permission_classes = [permissions.IsAuthenticated, IsFarmer]
+    
+    def get(self, request):
+        farm = Farm.objects.filter(farmer=request.user).first()
+        if not farm:
+            return Response({'error': 'No farm found'}, status=404)
+        
+        # Get latest sensor data
+        latest = SensorData.objects.filter(
+            device__farm=farm
+        ).order_by('-recorded_at').first()
+        
+        if not latest:
+            return Response({
+                'error': 'No sensor data yet. Start recording first.',
+                'ai_analysis': None
+            }, status=200)
+        
+        # Get 24h statistics
+        last_24h = timezone.now() - timedelta(hours=24)
+        history_stats = SensorData.objects.filter(
+            device__farm=farm,
+            recorded_at__gte=last_24h
+        ).aggregate(
+            avg_temp=Avg('temperature'),
+            avg_humidity=Avg('humidity'),
+            avg_soil=Avg('soil_moisture')
+        )
+        
+        formatted_stats = {
+            'avg_temp': round(history_stats['avg_temp'], 1) if history_stats['avg_temp'] else None,
+            'avg_humidity': round(history_stats['avg_humidity'], 1) if history_stats['avg_humidity'] else None,
+            'avg_soil': round(history_stats['avg_soil'], 1) if history_stats['avg_soil'] else None,
+        }
+        
+        # Get AI recommendations - NO FALLBACK
+        try:
+            advisor = AgriAIAdvisor()
+            ai_analysis = advisor.analyze(latest, formatted_stats, farm)
+            
+            return Response({
+                'farm_name': farm.name,
+                'generated_at': timezone.now().isoformat(),
+                'ai_model': 'llama-3.1-8b-instant (via Groq)',
+                'ai_analysis': ai_analysis
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'AI service temporarily unavailable: {str(e)}',
+                'ai_analysis': None,
+                'generated_at': timezone.now().isoformat()
+            }, status=503)

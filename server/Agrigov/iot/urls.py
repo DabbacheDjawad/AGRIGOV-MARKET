@@ -8,6 +8,7 @@ from .views import (
     AlertThresholdView,
     FarmAlertsView,
     ResolveAlertView,
+    AIRecommendationView,
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path('farm/thresholds/', AlertThresholdView.as_view(), name='alert-thresholds'),
     path('farm/alerts/', FarmAlertsView.as_view(), name='farm-alerts'),
     path('alerts/<int:alert_id>/resolve/', ResolveAlertView.as_view(), name='resolve-alert'),
+    path('recommendations/', AIRecommendationView.as_view(), name='ai-recommendations'),
 ]

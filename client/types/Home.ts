@@ -222,3 +222,25 @@ export const footerSupportLinks = [
   { label: "Contact Ministry", href: "#" },
   { label: "Privacy Policy", href: "#" },
 ];
+
+
+export interface HomepageData {
+  stats: {
+    total_farmers: number;
+    total_orders: number;
+    total_revenue: number;
+    total_products: number;
+    wilayas_count: number;
+    total_transporters: number;
+    total_buyers: number;
+  };
+  ticker: TickerItem[];
+  prices: PriceRow[];
+  news: NewsArticle[];
+}
+
+export interface HomepageResponse {
+  status: "success";
+  code: 200;
+  data: HomepageData;
+}

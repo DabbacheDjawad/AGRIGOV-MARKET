@@ -3,16 +3,31 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { transporterApi } from "@/lib/api";
-import { ApiMission, MISSION_STATUS_BADGE, MISSION_STATUS_ICON, MISSION_STATUS_LABEL, MISSION_STATUS_PROGRESS, formatMissionDate } from "@/types/Missions";
-import { statusToStep, MISSION_STEPS, cargoTagStyles } from "@/types/Transporter";
+import {
+  ApiMission,
+  MISSION_STATUS_BADGE,
+  MISSION_STATUS_ICON,
+  MISSION_STATUS_LABEL,
+  MISSION_STATUS_PROGRESS,
+  formatMissionDate,
+} from "@/types/Missions";
+import {
+  statusToStep,
+  MISSION_STEPS,
+  cargoTagStyles,
+} from "@/types/Transporter";
 
 type TabType = "available" | "active" | "completed" | "declined";
 
 // ─── Small reusable status badge ──────────────────────────────────────────────
 function StatusBadge({ status }: { status: ApiMission["status"] }) {
   return (
-    <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${MISSION_STATUS_BADGE[status]}`}>
-      <span className="material-symbols-outlined text-sm">{MISSION_STATUS_ICON[status]}</span>
+    <span
+      className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${MISSION_STATUS_BADGE[status]}`}
+    >
+      <span className="material-symbols-outlined text-sm">
+        {MISSION_STATUS_ICON[status]}
+      </span>
       {MISSION_STATUS_LABEL[status]}
     </span>
   );
@@ -48,11 +63,13 @@ function StepTracker({ status }: { status: ApiMission["status"] }) {
                   isDone
                     ? "bg-primary"
                     : isActive
-                    ? "bg-primary ring-2 ring-primary/30"
-                    : "bg-slate-300 dark:bg-slate-600"
+                      ? "bg-primary ring-2 ring-primary/30"
+                      : "bg-slate-300 dark:bg-slate-600"
                 }`}
               />
-              <span className={`text-[10px] whitespace-nowrap ${isDone || isActive ? "text-primary font-medium" : "text-slate-400"}`}>
+              <span
+                className={`text-[10px] whitespace-nowrap ${isDone || isActive ? "text-primary font-medium" : "text-slate-400"}`}
+              >
                 {step}
               </span>
             </div>
@@ -79,6 +96,14 @@ export default function MissionManagementPage() {
   const [declinedIds, setDeclinedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const determineCargoTag = (notes: string): keyof typeof cargoTagStyles => {
     const l = notes.toLowerCase();
@@ -90,23 +115,27 @@ export default function MissionManagementPage() {
 
   const fetchAvailableMissions = useCallback(async () => {
     try {
-      const res = await transporterApi.getAvailableMissions({ search: search || undefined });
+      const res = await transporterApi.getAvailableMissions({
+        search: debouncedSearch || undefined,
+      });
       setAvailableMissions(res.results);
     } catch (err) {
       console.error("Failed to fetch available missions:", err);
       setAvailableMissions([]);
     }
-  }, [search]);
+  }, [debouncedSearch]);
 
   const fetchMyMissions = useCallback(async () => {
     try {
-      const res = await transporterApi.getMyMissions({ search: search || undefined });
+      const res = await transporterApi.getMyMissions({
+        search: debouncedSearch || undefined,
+      });
       setMyMissions(res.results);
     } catch (err) {
       console.error("Failed to fetch my missions:", err);
       setMyMissions([]);
     }
-  }, [search]);
+  }, [debouncedSearch]);
 
   const loadDeclined = useCallback(() => {
     const stored = localStorage.getItem("declined_missions");
@@ -125,12 +154,15 @@ export default function MissionManagementPage() {
 
   // ── Derived lists from a single ApiMission[] — no intermediate type ──────────
   const activeMissions = useMemo(
-    () => myMissions.filter((m) => ["accepted", "picked_up", "in_transit"].includes(m.status)),
-    [myMissions]
+    () =>
+      myMissions.filter((m) =>
+        ["accepted", "picked_up", "in_transit"].includes(m.status),
+      ),
+    [myMissions],
   );
   const completedMissions = useMemo(
     () => myMissions.filter((m) => m.status === "delivered"),
-    [myMissions]
+    [myMissions],
   );
 
   // ── Search filters ───────────────────────────────────────────────────────────
@@ -187,7 +219,9 @@ export default function MissionManagementPage() {
   };
 
   const handleUpdateStatus = async (mission: ApiMission) => {
-    const next: Partial<Record<ApiMission["status"], "picked_up" | "in_transit" | "delivered">> = {
+    const next: Partial<
+      Record<ApiMission["status"], "picked_up" | "in_transit" | "delivered">
+    > = {
       accepted: "picked_up",
       picked_up: "in_transit",
       in_transit: "delivered",
@@ -233,7 +267,6 @@ export default function MissionManagementPage() {
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark p-6">
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
@@ -286,7 +319,11 @@ export default function MissionManagementPage() {
       {activeTab === "available" && (
         <div className="grid gap-4">
           {filtered.available.length === 0 ? (
-            <EmptyState icon="inbox" title="No available missions" sub="Check back later for new opportunities." />
+            <EmptyState
+              icon="inbox"
+              title="No available missions"
+              sub="Check back later for new opportunities."
+            />
           ) : (
             filtered.available.map((mission) => {
               const tag = determineCargoTag(mission.notes);
@@ -307,7 +344,9 @@ export default function MissionManagementPage() {
                           {mission.wilaya} · {mission.baladiya}
                         </p>
                       </div>
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${cargoTagStyles[tag]}`}>
+                      <span
+                        className={`text-xs font-bold px-2 py-1 rounded ${cargoTagStyles[tag]}`}
+                      >
                         {tag}
                       </span>
                     </div>
@@ -324,7 +363,9 @@ export default function MissionManagementPage() {
                       <span className="flex-1">{mission.delivery_address}</span>
                     </div>
                     {mission.notes && (
-                      <p className="text-xs text-slate-400 mt-2 italic">"{mission.notes}"</p>
+                      <p className="text-xs text-slate-400 mt-2 italic">
+                        "{mission.notes}"
+                      </p>
                     )}
                     <p className="text-xs text-slate-400 mt-2">
                       Posted {formatMissionDate(mission.created_at)}
@@ -351,7 +392,9 @@ export default function MissionManagementPage() {
                         </span>
                       ) : (
                         <>
-                          <span className="material-symbols-outlined text-sm">check_circle</span>
+                          <span className="material-symbols-outlined text-sm">
+                            check_circle
+                          </span>
                           Accept Mission
                         </>
                       )}
@@ -368,14 +411,21 @@ export default function MissionManagementPage() {
       {activeTab === "active" && (
         <div className="grid gap-4">
           {filtered.active.length === 0 ? (
-            <EmptyState icon="local_shipping" title="No active missions" sub="Accept a mission to get started." />
+            <EmptyState
+              icon="local_shipping"
+              title="No active missions"
+              sub="Accept a mission to get started."
+            />
           ) : (
             filtered.active.map((mission) => (
               <div
                 key={mission.id}
                 className="bg-white dark:bg-slate-800 rounded-xl border border-primary/30 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
               >
-                <Link href={`/Transporter/dashboard/missions/${mission.id}`} className="block p-4">
+                <Link
+                  href={`/Transporter/dashboard/missions/${mission.id}`}
+                  className="block p-4"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="font-bold">Order #{mission.order}</h3>
@@ -394,10 +444,14 @@ export default function MissionManagementPage() {
 
                   <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
                     {mission.accepted_at && (
-                      <span>Accepted {formatMissionDate(mission.accepted_at)}</span>
+                      <span>
+                        Accepted {formatMissionDate(mission.accepted_at)}
+                      </span>
                     )}
                     {mission.picked_up_at && (
-                      <span>Picked up {formatMissionDate(mission.picked_up_at)}</span>
+                      <span>
+                        Picked up {formatMissionDate(mission.picked_up_at)}
+                      </span>
                     )}
                   </div>
                 </Link>
@@ -432,7 +486,11 @@ export default function MissionManagementPage() {
       {activeTab === "completed" && (
         <div className="grid gap-4">
           {filtered.completed.length === 0 ? (
-            <EmptyState icon="history" title="No completed missions yet" sub="Completed deliveries will appear here." />
+            <EmptyState
+              icon="history"
+              title="No completed missions yet"
+              sub="Completed deliveries will appear here."
+            />
           ) : (
             filtered.completed.map((mission) => (
               <Link
@@ -468,7 +526,11 @@ export default function MissionManagementPage() {
       {activeTab === "declined" && (
         <div className="grid gap-4">
           {declinedIds.length === 0 ? (
-            <EmptyState icon="block" title="No declined missions" sub="You haven't declined any missions yet." />
+            <EmptyState
+              icon="block"
+              title="No declined missions"
+              sub="You haven't declined any missions yet."
+            />
           ) : (
             declinedIds.map((id) => (
               <div
@@ -496,7 +558,15 @@ export default function MissionManagementPage() {
 }
 
 // ─── Shared empty state ────────────────────────────────────────────────────────
-function EmptyState({ icon, title, sub }: { icon: string; title: string; sub: string }) {
+function EmptyState({
+  icon,
+  title,
+  sub,
+}: {
+  icon: string;
+  title: string;
+  sub: string;
+}) {
   return (
     <div className="text-center py-16">
       <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-3 block">

@@ -690,3 +690,11 @@ export const farmApi = {
   /** GET /api/farms/me/ — returns the authenticated farmer's farm */
   getMyFarm: () => apiFetch<{ results:[{id: number; name: string;}] /* other fields as needed */ }>("/api/farms/me/"),
 };
+
+import type { HomepageResponse } from "@/types/Home";  // we'll define this
+
+/*homepage*/
+export const homepageApi = {
+  /** GET /api/homepage/ — single source for landing page */
+  get: () => apiFetch<HomepageResponse>("/api/"),
+};

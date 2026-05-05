@@ -85,7 +85,7 @@ export default function BuyerOverviewPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Welcome back 👋</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">Welcome back</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Here's an overview of your activity on AGRIGOV.</p>
           </div>
           <Link href="/marketplace" className="flex items-center gap-2 bg-primary text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm">

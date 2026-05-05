@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'regions',
     'notifications',
     'iot',
-    
+    'api',
 ]
 
 REST_FRAMEWORK = {

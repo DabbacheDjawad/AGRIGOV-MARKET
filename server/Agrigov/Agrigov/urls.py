@@ -37,4 +37,5 @@ urlpatterns = [
     path("api/regions/", include("regions.urls")),
     path("api/notifications/", include("notifications.urls")),
     path("api/iot/", include("iot.urls")),
+    path("api/", include("api.urls")),
 ]

@@ -33,7 +33,6 @@ export default function MissionDetailPage({ missionId }: Props) {
   const [mission, setMission] = useState<ApiMission | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isScanLoading, setIsScanLoading] = useState(false);
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
 
   useEffect(() => {
@@ -63,13 +62,6 @@ export default function MissionDetailPage({ missionId }: Props) {
     };
     return progressMap[status] ?? 0;
   };
-
-  async function handleScanQR() {
-    setIsScanLoading(true);
-    // TODO: implement QR scanner
-    await new Promise((r) => setTimeout(r, 800));
-    setIsScanLoading(false);
-  }
 
   async function handleUpdateStatus() {
     if (!missionId || !mission) return;
@@ -202,14 +194,6 @@ console.log('Map Coordinates:', {
               progressPercent={getProgressPercent(mission.status)}
             />
             <CargoCard cargo={cargo} />
-            <MissionActions
-              status={mission.status}
-              syncedAgo="Just now"
-              onScanQR={handleScanQR}
-              onUpdateStatus={handleUpdateStatus}
-              isScanLoading={isScanLoading}
-              isUpdateLoading={isUpdateLoading}
-            />
           </div>
         </div>
       </main>

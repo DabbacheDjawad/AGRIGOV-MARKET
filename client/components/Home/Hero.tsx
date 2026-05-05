@@ -39,21 +39,6 @@ export default function HeroSection() {
           The centralized digital marketplace connecting farmers to fair prices, buyers to quality
           produce, and transporters to new routes.
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-          <Link
-            href="/marketplace"
-            className="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-black bg-primary hover:bg-primary-dark hover:scale-105 transition-all shadow-[0_0_20px_rgba(13,242,13,0.3)]"
-          >
-            Access Marketplace
-          </Link>
-          <Link
-            href="#"
-            className="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-surface-light/10 hover:bg-surface-light/20 backdrop-blur-md border border-white/20 hover:border-white/40 transition-all"
-          >
-            View Price Updates
-          </Link>
-        </div>
       </div>
     </div>
   );

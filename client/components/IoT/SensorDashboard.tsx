@@ -13,6 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import AIRecommendations from './AIRecommendations';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const API_BASE = 'http://127.0.0.1:8000/api/iot';
@@ -37,6 +38,12 @@ interface SensorStats {
     temperature: number | null;
     humidity: number | null;
     soil_moisture: number | null;
+    fire_raw: number | null;
+    fire_detected: boolean;
+    fire_percent: number | null;
+    rain_raw: number | null;
+    rain_detected: boolean;
+    rain_percent: number | null;
     recorded_at: string;
     device_id: string;
   } | null;
@@ -47,6 +54,12 @@ interface SensorReading {
   temperature: number | null;
   humidity: number | null;
   soil_moisture: number | null;
+  fire_raw: number | null;
+  fire_detected: boolean;
+  fire_percent: number | null;
+  rain_raw: number | null;
+  rain_detected: boolean;
+  rain_percent: number | null;
   recorded_at: string;
 }
 
@@ -74,7 +87,7 @@ export default function SensorDashboard() {
 
   useEffect(() => {
     fetchAllData();
-    const interval = setInterval(fetchAllData, 1000);
+    const interval = setInterval(fetchAllData, 500);
     return () => clearInterval(interval);
   }, []);
 
@@ -166,6 +179,60 @@ export default function SensorDashboard() {
     await fetch(`${API_BASE}/alerts/${id}/resolve/`, { method: 'PATCH', headers: headers() });
     fetchAllData();
   };
+// 🔥 FIRE ALARM - Realistic siren sound
+const [fireAudioCtx, setFireAudioCtx] = useState<any>(null);
+const [fireInterval, setFireInterval] = useState<any>(null);
+
+useEffect(() => {
+  if (stats?.latest?.fire_detected) {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setFireAudioCtx(audioCtx);
+      
+      let isHigh = true;
+      
+      const siren = () => {
+        if (!audioCtx) return;
+        
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        // Siren effect: sweep between 600Hz and 1200Hz
+        oscillator.frequency.value = isHigh ? 1200 : 600;
+        oscillator.type = 'sawtooth';  // Harsh siren sound
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+        
+        isHigh = !isHigh;
+      };
+      
+      // Siren every 500ms (creates woo-woo effect)
+      const interval = setInterval(siren, 500);
+      setFireInterval(interval);
+      siren();
+      
+    } catch (e) {}
+  } else {
+    if (fireInterval) {
+      clearInterval(fireInterval);
+      setFireInterval(null);
+    }
+    if (fireAudioCtx) {
+      fireAudioCtx.close();
+      setFireAudioCtx(null);
+    }
+  }
+  
+  return () => {
+    if (fireInterval) clearInterval(fireInterval);
+    if (fireAudioCtx) fireAudioCtx.close();
+  };
+}, [stats?.latest?.fire_detected]);
 
   // ─── Loading / Error states ─────────────────────────────────────────────────
 
@@ -279,23 +346,80 @@ export default function SensorDashboard() {
         </div>
       )}
 
-      {/* Live Cards */}
+      {/* Live Cards - 5 sensors */}
       {stats?.latest && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { label: 'Temperature', value: stats.latest.temperature, unit: '°C', icon: 'thermostat', color: 'red', border: 'border-red-500' },
-            { label: 'Humidity', value: stats.latest.humidity, unit: '%', icon: 'humidity_percentage', color: 'blue', border: 'border-blue-500' },
-            { label: 'Soil Moisture', value: stats.latest.soil_moisture, unit: '%', icon: 'grass', color: 'green', border: 'border-green-500' },
-          ].map(card => (
-            <div key={card.label} className={`bg-white dark:bg-surface-dark rounded-xl p-6 shadow-md border-l-4 ${card.border}`}>
-              <div className="flex items-center justify-between">
-                <span className={`material-symbols-outlined text-3xl text-${card.color}-500`}>{card.icon}</span>
-                <span className="text-xs text-slate-400">Live</span>
-              </div>
-              <p className="text-3xl font-bold mt-3">{card.value != null ? `${card.value}${card.unit}` : '--'}</p>
-              <p className="text-sm text-slate-500">{card.label}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {/* Temperature */}
+          <div className="bg-white dark:bg-surface-dark rounded-xl p-5 shadow-md border-l-4 border-red-500">
+            <div className="flex items-center justify-between">
+              <span className="material-symbols-outlined text-2xl text-red-500">thermostat</span>
+              <span className="text-xs text-slate-400">Live</span>
             </div>
-          ))}
+            <p className="text-2xl font-bold mt-2">{stats.latest.temperature != null ? `${stats.latest.temperature}°C` : '--'}</p>
+            <p className="text-xs text-slate-500">Temperature</p>
+          </div>
+
+          {/* Humidity */}
+          <div className="bg-white dark:bg-surface-dark rounded-xl p-5 shadow-md border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <span className="material-symbols-outlined text-2xl text-blue-500">humidity_percentage</span>
+              <span className="text-xs text-slate-400">Live</span>
+            </div>
+            <p className="text-2xl font-bold mt-2">{stats.latest.humidity != null ? `${stats.latest.humidity}%` : '--'}</p>
+            <p className="text-xs text-slate-500">Humidity</p>
+          </div>
+
+          {/* Soil Moisture */}
+          <div className="bg-white dark:bg-surface-dark rounded-xl p-5 shadow-md border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <span className="material-symbols-outlined text-2xl text-green-500">grass</span>
+              <span className="text-xs text-slate-400">Live</span>
+            </div>
+            <p className="text-2xl font-bold mt-2">{stats.latest.soil_moisture != null ? `${stats.latest.soil_moisture}%` : '--'}</p>
+            <p className="text-xs text-slate-500">Soil Moisture</p>
+          </div>
+
+          {/* 🔥 Fire Detection */}
+          <div className={`bg-white dark:bg-surface-dark rounded-xl p-5 shadow-md border-l-4 ${
+            stats.latest.fire_detected ? 'border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-orange-400'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`material-symbols-outlined text-2xl ${
+                stats.latest.fire_detected ? 'text-red-600' : 'text-orange-400'
+              }`}>local_fire_department</span>
+              <span className="text-xs text-slate-400">Live</span>
+            </div>
+            <p className={`text-2xl font-bold mt-2 ${
+              stats.latest.fire_detected ? 'text-red-600' : 'text-slate-800 dark:text-slate-100'
+            }`}>
+              {stats.latest.fire_detected ? '🔥 FIRE!' : '✅ Safe'}
+            </p>
+            <p className="text-xs text-slate-500">Fire Detection</p>
+            {stats.latest.fire_detected && (
+              <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Emergency!</p>
+            )}
+          </div>
+
+          {/* 💧 Rain Detection */}
+          <div className={`bg-white dark:bg-surface-dark rounded-xl p-5 shadow-md border-l-4 ${
+            stats.latest.rain_detected ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-blue-300'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`material-symbols-outlined text-2xl ${
+                stats.latest.rain_detected ? 'text-blue-600' : 'text-blue-300'
+              }`}>water_drop</span>
+              <span className="text-xs text-slate-400">Live</span>
+            </div>
+            <p className={`text-2xl font-bold mt-2 ${
+              stats.latest.rain_detected ? 'text-blue-600' : 'text-slate-800 dark:text-slate-100'
+            }`}>
+              {stats.latest.rain_detected ? '🌧️ Rain' : '☀️ Dry'}
+            </p>
+            <p className="text-xs text-slate-500">Rain Detection</p>
+            {stats.latest.rain_detected && stats.latest.rain_percent != null && (
+              <p className="text-xs text-blue-600 mt-1 font-medium">Intensity: {stats.latest.rain_percent}%</p>
+            )}
+          </div>
         </div>
       )}
 

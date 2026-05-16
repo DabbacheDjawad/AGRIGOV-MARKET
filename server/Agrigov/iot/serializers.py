@@ -18,8 +18,13 @@ class SensorDataSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = SensorData
-        fields = ['id', 'device', 'device_id', 'farm_name', 'temperature', 'humidity', 
-                  'soil_moisture', 'recorded_at', 'created_at']
+        fields = [
+            'id', 'device', 'device_id', 'farm_name',
+            'temperature', 'humidity', 'soil_moisture',
+            'fire_raw', 'fire_detected', 'fire_percent',   # NEW
+            'rain_raw', 'rain_detected', 'rain_percent',   # NEW
+            'recorded_at', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
 
 

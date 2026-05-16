@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-
+import AIRecommendations from './AIRecommendations';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const API_BASE = 'http://127.0.0.1:8000/api/iot';
@@ -74,7 +74,7 @@ export default function SensorDashboard() {
 
   useEffect(() => {
     fetchAllData();
-    const interval = setInterval(fetchAllData, 10000);
+    const interval = setInterval(fetchAllData, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -298,6 +298,9 @@ export default function SensorDashboard() {
           ))}
         </div>
       )}
+
+      {/* AI Recommendations */}
+      <AIRecommendations />
 
       {/* Chart */}
       {readings.length > 0 && (

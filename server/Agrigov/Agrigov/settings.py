@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'notifications',
     'iot',
     'api',
+    'chats',
 ]
 
 REST_FRAMEWORK = {
@@ -181,3 +182,5 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
  
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")

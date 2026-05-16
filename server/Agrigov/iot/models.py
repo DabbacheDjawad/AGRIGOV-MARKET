@@ -32,12 +32,20 @@ class SensorData(models.Model):
     """Sensor readings from IoT devices"""
     device = models.ForeignKey(IoTDevice, on_delete=models.CASCADE, related_name='readings')
     
+    # Existing sensors
     temperature = models.FloatField(null=True, blank=True, help_text="Temperature in Celsius")
     humidity = models.FloatField(null=True, blank=True, help_text="Humidity in %")
     soil_moisture = models.IntegerField(null=True, blank=True, help_text="Soil moisture in %")
     
-    battery_level = models.IntegerField(null=True, blank=True, help_text="Battery level %")
-    signal_strength = models.IntegerField(null=True, blank=True, help_text="WiFi signal strength")
+    # NEW: Fire detection
+    fire_raw = models.IntegerField(null=True, blank=True, help_text="Raw flame sensor value (0-4095)")
+    fire_detected = models.BooleanField(default=False, help_text="Is fire detected?")
+    fire_percent = models.IntegerField(null=True, blank=True, help_text="Fire probability %")
+    
+    # NEW: Rain detection
+    rain_raw = models.IntegerField(null=True, blank=True, help_text="Raw rain sensor value (0-4095)")
+    rain_detected = models.BooleanField(default=False, help_text="Is rain detected?")
+    rain_percent = models.IntegerField(null=True, blank=True, help_text="Rain intensity %")
     
     recorded_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -51,7 +59,6 @@ class SensorData(models.Model):
             models.Index(fields=['device', '-recorded_at']),
             models.Index(fields=['recorded_at']),
         ]
-
 
 class AlertThreshold(models.Model):
     """Thresholds for alerts"""
@@ -83,6 +90,10 @@ class Alert(models.Model):
         ('soil_dry', 'Soil Too Dry'),
         ('soil_wet', 'Soil Too Wet'),
         ('device_offline', 'Device Offline'),
+        # NEW
+        ('fire_detected', '🔥 Fire Detected'),
+        ('rain_detected', '🌧️ Rain Detected'),
+        ('heavy_rain', '⛈️ Heavy Rain Warning'),
     ]
     
     SEVERITY_CHOICES = [

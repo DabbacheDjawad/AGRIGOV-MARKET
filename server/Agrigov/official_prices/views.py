@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from .models import OfficialPrice
 from .serializers import OfficialPriceSerializer
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsFarmer
 from .services import get_active_price, expire_old_price
 
 
@@ -71,4 +71,4 @@ class OfficialPriceListView(generics.ListAPIView):
     """GET /official-prices/  — admin can see all prices"""
     queryset = OfficialPrice.objects.select_related("product").all()
     serializer_class = OfficialPriceSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    permission_classes = [permissions.IsAuthenticated, (IsAdmin | IsFarmer)]

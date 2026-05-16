@@ -122,6 +122,7 @@ export const FARMER_NAV: NavItem[] = [
   { href: "/farmer/dashboard",           label: "Overview",   icon: "space_dashboard" },
   { href: "/farmer/dashboard/products",  label: "Products",   icon: "storefront"      },
   { href: "/farmer/dashboard/orders",    label: "Orders",     icon: "receipt_long"    },
+  { href: "/farmer/dashboard/OfficialPrices",   label: "Official Prices",    icon: "price_change"  },
   { href: "/farmer/dashboard/analytics", label: "Analytics",  icon: "bar_chart"       },
   { href: "/farmer/dashboard/missions",  label: "Missions",   icon: "delivery_truck_bolt" },
   { href: "/farmer/dashboard/iot",       label: "IoT Sensors", icon: "sensors"        },  // ← ADD THIS

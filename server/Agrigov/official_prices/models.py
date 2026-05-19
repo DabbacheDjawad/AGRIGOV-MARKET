@@ -12,6 +12,7 @@ class OfficialPrice(models.Model):
         ("ton", "Ton"),
         ("box", "Box"),
         ("bag", "Bag"),
+        ("liter", "Liter"),
     ]
 
     # ← FK instead of product_name CharField

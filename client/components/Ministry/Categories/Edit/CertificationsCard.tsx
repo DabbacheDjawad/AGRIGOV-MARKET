@@ -35,15 +35,6 @@ export default function CertificationsCard({
             </button>
           </div>
         ))}
-
-        {/* Add chip */}
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-2 border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-500 px-4 py-2 rounded-full hover:border-primary/50 hover:text-primary transition-all"
-        >
-          <span className="material-symbols-outlined text-sm">add</span>
-          <span className="font-bold">Add Cert</span>
-        </button>
       </div>
 
       <p className="mt-4 text-xs text-slate-400 italic">

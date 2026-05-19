@@ -8,7 +8,7 @@ import CheckoutOrderSummary from "@/components/Checkout/CheckoutOrderSummary";
 import { cartApi, orderApi } from "@/lib/api";
 import { ApiError } from "@/lib/api";
 import type { CartResponse } from "@/types/Cart";
-import type { ApiTransporter, CheckoutResponse, DeliveryAddress } from "@/types/Checkout";
+import type { CheckoutResponse, DeliveryAddress } from "@/types/Checkout";
 import { redirect } from "next/navigation";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -38,12 +38,10 @@ function getStoredAddress(): DeliveryAddress {
 
 export default function CheckoutPage() {
   const [cart,             setCart]          = useState<CartResponse | null>(null);
-  const [selectedId,       setSelectedId]    = useState<number | null>(null);
   const [address,          setAddress]       = useState<DeliveryAddress>(getStoredAddress);
   const [notes,            setNotes]         = useState("");
 
   const [cartLoading,      setCartLoading]   = useState(true);
-  const [transLoading,     setTransLoading]  = useState(true);
   const [isSubmitting,     setIsSubmitting]  = useState(false);
   const [error,            setError]         = useState("");
   const [confirmedOrder,   setConfirmedOrder] = useState<CheckoutResponse | null>(null);
@@ -57,44 +55,40 @@ export default function CheckoutPage() {
       .finally(() => setCartLoading(false));
   }, []);
 
-  // ── Re-fetch transporters when the user changes the delivery wilaya ─────────
+const handleAddressChange = useCallback((a: DeliveryAddress) => {
+  setAddress(a);
+}, []);
 
-  const handleAddressChange = useCallback((a: DeliveryAddress) => {
-    setAddress(a);
-    setSelectedId(null);
-    setTransLoading(true);
-  }, []);
+const handleConfirm = async () => {
+  if (!address.wilaya || !address.address) {
+    setError("Please fill in your delivery address before confirming.");
+    return;
+  }
 
-  // ── Submit order ────────────────────────────────────────────────────────────
+  setIsSubmitting(true);
+  setError("");
+  let success = false;
 
-  const handleConfirm = async () => {
-    // if (!address.wilaya || !address.address) {
-    //   setError("Please fill in your delivery address before confirming.");
-    //   return;
-    // }
-    let success:Boolean = false;
-    setIsSubmitting(true);
-    setError("");
+  try {
+    const order = await orderApi.checkout({
+      delivery_wilaya:  address.wilaya,
+      delivery_address: address.address,
+    });
+    setConfirmedOrder(order);
+    success = true;
+  } catch (err) {
+    console.log(err);
+    setError(
+      err instanceof ApiError
+        ? err.status === 401 ? "Please sign in to place an order." : err.message
+        : "Failed to place your order. Please try again.",
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
 
-    try {
-      const order = await orderApi.checkout();
-      setConfirmedOrder(order);
-      success=true;
-    } catch (err) {
-        console.log(err);
-        success=false;
-      setError(
-        err instanceof ApiError
-          ? err.status === 401 ? "Please sign in to place an order." : err.message
-          : "Failed to place your order. Please try again.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-    if(success) {
-      redirect("/marketplace");
-    }
-  };
+  if (success) redirect("/marketplace");
+};
 
   // ── Loading skeleton ────────────────────────────────────────────────────────
 
@@ -145,16 +139,9 @@ export default function CheckoutPage() {
     <div className="bg-background-light font-display text-gray-800 antialiased min-h-screen flex flex-col">
 
       {/* Nav strip */}
-      <div className="bg-white border-b border-neutral-100 sticky top-0 z-10">
+      <div className="bg-inherit  sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
-              <span className="material-symbols-outlined text-black text-sm"
-                style={{ fontVariationSettings: "'FILL' 1" }}>
-                agriculture
-              </span>
-            </div>
-            <span className="text-sm font-bold text-gray-900">AgriConnect</span>
           </div>
           <CheckoutStepper />
           <Link href="/cart" className="text-xs text-gray-400 hover:text-primary-dark font-medium flex items-center gap-1">
@@ -186,10 +173,10 @@ export default function CheckoutPage() {
             <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
 
             {/* 1. Delivery address */}
-            <DeliveryAddressCard
-              address={address}
-              onChange={handleAddressChange}
-            />
+<DeliveryAddressCard
+  address={address}
+  onAddressChange={handleAddressChange}   // ← add this
+/>
 
             {/* 3. Optional notes */}
             <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-5">

@@ -37,6 +37,9 @@ class Order(models.Model):
         on_delete=models.CASCADE,
         related_name='orders'
     )
+    
+    delivery_wilaya = models.CharField(max_length=255 )
+    delivery_address = models.CharField(max_length=255)
 
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')

@@ -59,7 +59,9 @@ class OrderSerializer(serializers.ModelSerializer):
             'status',
             'created_at',
             'items',
-            'allowed_statuses'
+            'allowed_statuses',
+            "delivery_wilaya",
+            "delivery_address",
         ]
 
     def get_allowed_statuses(self, obj):
@@ -81,6 +83,9 @@ class OrderSerializer(serializers.ModelSerializer):
 # CHECKOUT SERIALIZER
 class CheckoutSerializer(serializers.Serializer):
     cart_id = serializers.IntegerField(required=False)
+    # ADD THESE TWO FIELDS HERE:
+    delivery_wilaya = serializers.CharField(required=True)  # or IntegerField depending on your DB model type
+    delivery_address = serializers.CharField(required=True)
 
     def validate(self, data):
         from cart.models import Cart
@@ -105,12 +110,19 @@ class CheckoutSerializer(serializers.Serializer):
 
         data['cart'] = cart
         data['buyer'] = buyer
+        # DRF will now automatically pass delivery_wilaya and delivery_address into data
         return data
 
     def create(self, validated_data):
         from .utils import create_orders_from_cart
-
+        
+        # Now these fields are guaranteed to exist in validated_data if sent by frontend!
+        wilaya = validated_data.get('delivery_wilaya', None)
+        address = validated_data.get('delivery_address', None)
+        
         return create_orders_from_cart(
             validated_data['buyer'],
-            validated_data['cart']
+            validated_data['cart'],
+            wilaya,
+            address
         )

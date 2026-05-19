@@ -15,13 +15,21 @@ def generate_invoice_pdf(order):
     elements.append(Paragraph(f"Invoice #{order.id}", styles["Title"]))
     elements.append(Spacer(1, 10))
 
-
     elements.append(Paragraph(f"Buyer: {order.buyer}", styles["Normal"]))
     elements.append(Paragraph(f"Farm: {order.farm}", styles["Normal"]))
+    
+    # Add delivery details if present
+    delivery_wilaya = getattr(order, 'delivery_wilaya', None)
+    delivery_address = getattr(order, 'delivery_address', None)
+    
+    if delivery_wilaya:
+        elements.append(Paragraph(f"Delivery Wilaya: {delivery_wilaya}", styles["Normal"]))
+    if delivery_address:
+        elements.append(Paragraph(f"Delivery Address: {delivery_address}", styles["Normal"]))
+    
     elements.append(Paragraph(f"Status: {order.status}", styles["Normal"]))
     elements.append(Paragraph(f"Date: {order.created_at}", styles["Normal"]))
     elements.append(Spacer(1, 15))
-
 
     data = [["Product", "Price (DZD)", "Quantity", "Total (DZD)"]]
 
@@ -38,14 +46,11 @@ def generate_invoice_pdf(order):
     # TOTAL ROW
     data.append(["", "", "Total:", str(order.total_price)])
 
-
     table = Table(data)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-
         ("GRID", (0, 0), (-1, -1), 1, colors.black),
-
         ("ALIGN", (1, 1), (-1, -1), "CENTER"),
     ]))
 

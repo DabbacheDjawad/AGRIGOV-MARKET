@@ -60,10 +60,6 @@ class MinistryProductDeleteView(generics.DestroyAPIView):
     queryset = MinistryProduct.objects.all()
     permission_classes = [IsAdmin]
 
-    def perform_destroy(self, instance):
-        instance.is_active = False
-        instance.save()
-
 
 # ═══════════════════════════════════════════════
 #  Product views  (farmer listings)

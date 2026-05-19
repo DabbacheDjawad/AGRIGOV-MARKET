@@ -211,7 +211,7 @@ function ProductPanel({ mode, initial, categories, isSaving, saveError, onSave, 
             className="flex-1 px-4 py-2 text-sm font-bold rounded-lg bg-primary text-slate-900 shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isSaving && (
-              <span className="material-icons text-sm animate-spin">progress_activity</span>
+              <span className="material-icons text-sm animate-spin inline-block">progress_activity</span>
             )}
             {isSaving ? "Saving…" : mode === "create" ? "Create" : "Save Changes"}
           </button>
@@ -285,29 +285,45 @@ export default function MinistryProductsClient() {
 
   useEffect(() => { return fetchProducts(); }, [fetchProducts]);
 
-  // ── save (create or update) ─────────────────────────────────────────────────
-  const handleSave = useCallback(async (payload: MinistryProductPayload) => {
-    setSaveError(null);
-    setIsSaving(true);
-    try {
-      if (panelMode === "create") {
-        const created = await ministryProductApi.create(payload);
-        setItems((prev) => [created, ...prev]);
-        setTotalCount((c) => c + 1);
-        showToast(`"${created.name}" created successfully.`, true);
-      } else if (panelMode === "edit" && editingItem) {
-        const updated = await ministryProductApi.update(editingItem.id, payload);
-        setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-        showToast(`"${updated.name}" updated.`, true);
-      }
-      setPanelMode(null);
-      setEditingItem(null);
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : "Failed to save.");
-    } finally {
-      setIsSaving(false);
+
+  function enrichProduct(
+  product: MinistryProduct,
+  categories: ApiCategory[]
+): MinistryProduct {
+  if (!product.category_name && product.category != null) {
+    const cat = categories.find((c) => c.id === product.category);
+    if (cat) {
+      return { ...product, category_name: cat.name , slug: product.slug || slugify(product.name) };
     }
-  }, [panelMode, editingItem]);
+  }
+  return product;
+}
+
+  // ── save (create or update) ─────────────────────────────────────────────────
+const handleSave = useCallback(async (payload: MinistryProductPayload) => {
+  setSaveError(null);
+  setIsSaving(true);
+  try {
+    if (panelMode === "create") {
+      const created = await ministryProductApi.create(payload);
+      const enriched = enrichProduct(created, categories);
+      setItems((prev) => [enriched, ...prev]);
+      setTotalCount((c) => c + 1);
+      showToast(`"${enriched.name}" created successfully.`, true);
+    } else if (panelMode === "edit" && editingItem) {      
+      const updated = await ministryProductApi.update(editingItem.id, payload);
+      const enriched = enrichProduct(updated, categories);
+      setItems((prev) => prev.map((i) => (i.id === enriched.id ? enriched : i)));
+      showToast(`"${enriched.name}" updated.`, true);
+    }
+    setPanelMode(null);
+    setEditingItem(null);
+  } catch (err) {
+    setSaveError(err instanceof ApiError ? err.message : "Failed to save.");
+  } finally {
+    setIsSaving(false);
+  }
+}, [panelMode, editingItem, categories]); // ← add `categories` to the dependency array
 
   // ── delete ──────────────────────────────────────────────────────────────────
   const handleDelete = useCallback(async (item: MinistryProduct) => {

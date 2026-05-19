@@ -58,7 +58,7 @@ export interface NavItem {
 }
 
 export const CERTIFYING_OFFICIAL = {
-  name: "Hon. Marcus Arredondo",
+  name: "Exe Djamal Aziz",
   key:  "AGRIGOV-PR-2026-X892-001",
 };
 

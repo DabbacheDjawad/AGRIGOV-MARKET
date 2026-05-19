@@ -279,6 +279,7 @@ export default function ProductManagementPage() {
   }, [products, totalCount]);
 
   const farmName = products[0]?.farm.name;
+    console.log(products[1])
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 

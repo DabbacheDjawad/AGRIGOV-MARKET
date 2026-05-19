@@ -104,7 +104,7 @@ export const INITIAL_AUDIT_LOG: AuditEntry[] = [
   },
 ];
 
-export const UNIT_OPTIONS = ["kg", "bag", "ton", "quintal", "litre"] as const;
+export const UNIT_OPTIONS = ["kg", "bag", "ton", "liter" , "box"] as const;
 export type PriceUnit = typeof UNIT_OPTIONS[number];
 
 // Category badge colours by region or category name

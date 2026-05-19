@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { redirect, useParams, useRouter } from 'next/navigation';
 import ProductGalleryCard from './ProductGallery';
 import CropSpecificationsCard from './CropsSpecifications';
 import MarketPricingCard from './Pricing';
@@ -49,6 +49,30 @@ function PageSkeleton() {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch all ministry products across all pages.
+ * @param pageSize – number of items per request (max backend limit)
+ */
+async function fetchAllMinistryProducts(pageSize = 100): Promise<MinistryProductOption[]> {
+  let allProducts: MinistryProductOption[] = [];
+  let currentPage = 1;
+  let hasNext = true;
+
+  while (hasNext) {
+    try {
+      const response = await ministryProductApi.list(currentPage, pageSize);
+      allProducts = allProducts.concat(response.results);
+      hasNext = !!response.next;
+      currentPage++;
+    } catch (error) {
+      console.error('Failed to fetch ministry products page', currentPage, error);
+      throw error;
+    }
+  }
+
+  return allProducts;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function apiToForm(data: any): ProductForm {
@@ -100,11 +124,17 @@ export default function ProductEditPage() {
 
   const cancelledRef = useRef(false);
 
-  // ── Fetch ministry products ────────────────────────────────────────────────
+  // ── Fetch all ministry products (pagination) ────────────────────────────────
   useEffect(() => {
-    ministryProductApi.list(1, 100)
-      .then((res) => setMinistryProducts(res.results))
-      .catch(() => {})
+    fetchAllMinistryProducts(100)
+      .then((allProducts) => {
+        // Filter active only if needed; API likely returns active by default
+        setMinistryProducts(allProducts);
+      })
+      .catch(() => {
+        // Silently fail – dropdown will be empty, but we don't want to block the page
+        console.error('Failed to load ministry products');
+      })
       .finally(() => setIsLoadingProducts(false));
   }, []);
 
@@ -193,7 +223,7 @@ export default function ProductEditPage() {
 
       setNewImgFiles([]);
       setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      setTimeout(() => {setShowToast(false);redirect("/farmer/dashboard/products")}, 3000);
     } catch (err) {
       if (err instanceof ApiError) {
         try {
@@ -351,7 +381,6 @@ export default function ProductEditPage() {
                 fieldErrors={fieldErrors}
               />
               <InventoryStatusCard statuses={INVENTORY_STATUSES} />
-              <MarketExpertCard onConnect={() => {}} />
             </div>
           </div>
         </div>

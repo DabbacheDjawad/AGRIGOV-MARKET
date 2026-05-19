@@ -5,7 +5,7 @@ from products.models import Product
 from .models import Order, OrderItem, ProductItem
 
 @transaction.atomic
-def create_orders_from_cart(buyer, cart):
+def create_orders_from_cart(buyer, cart,delivery_wilaya, delivery_address):
     items = cart.items.select_related('product__farm')
 
     if not items.exists():
@@ -22,7 +22,9 @@ def create_orders_from_cart(buyer, cart):
         order = Order.objects.create(
             buyer=buyer,
             farm=farm,
-            total_price=0
+            total_price=0,
+            delivery_wilaya=delivery_wilaya,   # ← was missing
+            delivery_address=delivery_address, 
         )
 
         total = 0

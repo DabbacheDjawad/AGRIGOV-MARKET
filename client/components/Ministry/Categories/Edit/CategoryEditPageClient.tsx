@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { ministryProductApi } from '@/lib/api';
+import type { MinistryProduct } from '@/types/MinistryProduct';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import CoreDefinitionCard from './CoreDefinitionCard';
-import QualityMetricsCard from './QualityMetricsCard';
 import CertificationsCard from './CertificationsCard';
 import SubCategoriesCard from './SubcategoryCard';
 import {
@@ -54,7 +55,6 @@ export default function CategoryEditPage() {
   const [form, setForm]                     = useState<CategoryForm>(EMPTY_FORM);
   const [metrics, setMetrics]               = useState(INITIAL_METRICS);
   const [certifications, setCertifications] = useState<Certification[]>(INITIAL_CERTIFICATIONS);
-  const [subCategories, setSubCategories]   = useState(INITIAL_SUBCATEGORIES);
   const [isVisible, setIsVisible]           = useState(true);
 
   // ── action state ──────────────────────────────────────────────────────────
@@ -63,7 +63,33 @@ export default function CategoryEditPage() {
   const [saveError,  setSaveError]  = useState<string | null>(null);
   const [toast,      setToast]      = useState<string | null>(null);
 
+  const [subCategories, setSubCategories] = useState<MinistryProduct[]>([]);
+const [subLoading, setSubLoading] = useState(false);
+const [subError, setSubError] = useState<string | null>(null);
+
   const cancelledRef = useRef(false);
+
+  useEffect(() => {
+  if (isNew) {
+    setSubCategories([]);
+    return;
+  }
+
+  setSubLoading(true);
+  setSubError(null);
+
+  ministryProductApi
+    .list(1, 100, undefined)
+    .then((res) => {
+      setSubCategories(res.results);
+    })
+    .catch((err: unknown) => {
+      setSubError(err instanceof ApiError ? err.message : 'Failed to load sub‑categories.');
+    })
+    .finally(() => {
+      setSubLoading(false);
+    });
+}, [categoryId, isNew]);
 
   // ── fetch category detail ──────────────────────────────────────────────────
   useEffect(() => {
@@ -268,7 +294,6 @@ export default function CategoryEditPage() {
             {/* Left column */}
             <div className="md:col-span-7 space-y-6">
               <CoreDefinitionCard form={form} onChange={handleFormChange} />
-              <QualityMetricsCard metrics={metrics} onAddMetric={() => console.log('Add metric')} />
             </div>
 
             {/* Right column */}
@@ -278,11 +303,13 @@ export default function CategoryEditPage() {
                 onRemove={(id) => setCertifications((prev) => prev.filter((c) => c.id !== id))}
                 onAdd={() => console.log('Add cert')}
               />
-              <SubCategoriesCard
-                subCategories={subCategories}
-                onEdit={(id) => console.log('Edit sub-cat:', id)}
-                onAdd={() => console.log('Add sub-cat')}
-              />
+<SubCategoriesCard
+  subCategories={subCategories}
+  isLoading={subLoading}
+  error={subError}
+  onEdit={(id) => router.push(`/admin/products/${id}/edit`)}
+  onAdd={() => router.push(`/admin/products/new?category=${categoryId}`)}
+/>
               {/* Advanced metadata card */}
               <section className="relative overflow-hidden rounded-xl p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-primary/10 shadow-sm">
                 <div className="relative z-10 flex items-center justify-between">
@@ -297,64 +324,6 @@ export default function CategoryEditPage() {
               </section>
             </div>
           </div>
-
-          {/* Footer */}
-          <footer className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 pb-20">
-            <div className="flex items-center gap-4">
-              <span className="material-symbols-outlined text-slate-400">history</span>
-              <p className="text-sm text-slate-500 italic">
-                Last modified by{' '}
-                <span className="font-bold text-slate-700 dark:text-slate-300">
-                  {LAST_MODIFIED.by}
-                </span>{' '}
-                on {LAST_MODIFIED.date}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {/* Visibility toggle */}
-              <div className="text-right">
-                <p className="text-xs font-bold uppercase tracking-tighter text-slate-400">
-                  Visibility Status
-                </p>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      isVisible ? 'bg-primary animate-pulse' : 'bg-slate-400'
-                    }`}
-                  />
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    {isVisible ? 'Publicly Visible' : 'Hidden'}
-                  </span>
-                  <button
-                    onClick={() => setIsVisible((v) => !v)}
-                    aria-label="Toggle category visibility"
-                    className="text-xs text-primary font-bold hover:underline ml-1"
-                  >
-                    Toggle
-                  </button>
-                </div>
-              </div>
-
-              {/* Delete (only for existing categories) */}
-              {!isNew && (
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  aria-label="Delete category"
-                  className="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-colors disabled:opacity-50"
-                >
-                  {isDeleting ? (
-                    <span className="material-symbols-outlined animate-spin">
-                      progress_activity
-                    </span>
-                  ) : (
-                    <span className="material-symbols-outlined">delete</span>
-                  )}
-                </button>
-              )}
-            </div>
-          </footer>
         </div>
       </main>
 

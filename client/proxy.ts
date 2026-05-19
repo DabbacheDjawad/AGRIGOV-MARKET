@@ -5,10 +5,10 @@ import { UserRole } from "./types/roles";
 const PUBLIC_ROUTES = ["/Login", "/Register", "/not-allowed"];
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
-  FARMER: ["/farmer", "/marketplace", "/farmer/profile", "/", "/notifications","/chat"],  // ← ADD
-  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/buyer/dashboard", "/", "/notifications","/chat"],  // ← ADD
-  TRANSPORTER: ["/transporter", "/transporter/profile", "/", "/notifications"],  // ← ADD
-  ADMIN: ["/Ministry/dashboard", "/", "/notifications"],  // ← ADD
+  FARMER: ["/farmer", "/marketplace", "/farmer/profile", "/", "/notifications","/chat" , "/policies"],  
+  BUYER: ["/marketplace", "/buyer/profile", "/Cart", "/Checkout", "/buyer/dashboard", "/", "/notifications","/chat" , "/policies"],  
+  TRANSPORTER: ["/transporter", "/transporter/profile", "/", "/notifications" , "/policies"],  
+  ADMIN: ["/Ministry/dashboard", "/", "/notifications" , "/policies"],  
 };
 
 export function proxy(req: NextRequest) {

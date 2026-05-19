@@ -122,16 +122,20 @@ export const farmerProductApi = {
 
 
 // ─── Orders / Checkout ────────────────────────────────────────────────────────
- 
+ export interface CheckoutPayload {
+  delivery_wilaya:  string;
+  delivery_address: string;
+}
 export const orderApi = {
   /**
    * POST /api/orders/checkout/
    * Converts the current cart into a confirmed order.
    * Body: { transporter_id, delivery_wilaya, delivery_baladiya, delivery_address, notes? }
    */
-  checkout: () =>
+  checkout: (payload: CheckoutPayload) =>
     apiFetch<CheckoutResponse>("/api/orders/checkout/", {
       method: "POST",
+      body:   JSON.stringify(payload),   // ← was empty body
     }),
  
   /**

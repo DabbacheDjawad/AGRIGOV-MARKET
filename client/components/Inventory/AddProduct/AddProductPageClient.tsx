@@ -30,6 +30,7 @@ interface ApiFarm {
 
 interface Paginated<T> {
   results: T[];
+  next: string | null;
 }
 
 const INITIAL_FORM: ProductListingForm = {
@@ -41,6 +42,30 @@ const INITIAL_FORM: ProductListingForm = {
   season: "summer",
   farm_id: "",
 };
+
+/**
+ * Fetch all ministry products across all pages.
+ * @param pageSize – number of items per request
+ */
+async function fetchAllMinistryProducts(pageSize = 100): Promise<MinistryProductOption[]> {
+  let allProducts: MinistryProductOption[] = [];
+  let currentPage = 1;
+  let hasNext = true;
+
+  while (hasNext) {
+    try {
+      const response = await ministryProductApi.list(currentPage, pageSize);
+      allProducts = allProducts.concat(response.results);
+      hasNext = !!response.next;
+      currentPage++;
+    } catch (error) {
+      console.error("Failed to fetch ministry products page", currentPage, error);
+      throw error;
+    }
+  }
+
+  return allProducts;
+}
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -60,25 +85,24 @@ export default function AddProductPage() {
     max: number;
   } | null>(null);
 
-  // ── Load metadata ─────────────────────────────────────
+  // ── Load metadata (all products & farms) ─────────────────────────────────────
   useEffect(() => {
     async function loadMeta() {
       try {
-        const [mpRes, farmRes] = await Promise.allSettled([
-          ministryProductApi.list(1, 100),
-          apiFetch<Paginated<ApiFarm>>("/api/farms/me/"),
-        ]);
+        // Fetch all ministry products (all pages)
+        const allProducts = await fetchAllMinistryProducts(100);
+        setMinistryProducts(allProducts);
 
-        const mp = mpRes.status === "fulfilled" ? mpRes.value.results : [];
-        const farms = farmRes.status === "fulfilled" ? farmRes.value.results : [];
+        // Fetch user's farms
+        const farmRes = await apiFetch<Paginated<ApiFarm>>("/api/farms/me/");
+        const farmsList = farmRes.results;
+        setFarms(farmsList);
 
-        setMinistryProducts(mp);
-        setFarms(farms);
-
+        // Pre-select first product and first farm if available
         setForm((prev) => ({
           ...prev,
-          ministry_product_id: mp[0] ? String(mp[0].id) : "",
-          farm_id: farms[0] ? String(farms[0].id) : "",
+          ministry_product_id: allProducts[0] ? String(allProducts[0].id) : "",
+          farm_id: farmsList[0] ? String(farmsList[0].id) : "",
         }));
       } catch {
         setError("Failed to load data. Please refresh.");
@@ -187,26 +211,28 @@ export default function AddProductPage() {
 
       router.push("/farmer/dashboard/products");
     } catch (err) {
-if (err instanceof ApiError) {
-  try {
-    const body = JSON.parse(err.message);
+      if (err instanceof ApiError) {
+        try {
+          const body = JSON.parse(err.message);
 
-    if (typeof body === "object" && body !== null) {
-      const errors = body as ApiFieldErrors;
+          if (typeof body === "object" && body !== null) {
+            const errors = body as ApiFieldErrors;
 
-      setFieldErrors(errors);
+            setFieldErrors(errors);
 
-      // 🔥 important: show main business error
-      if (errors.ministry_product_id?.length) {
-        setError(errors.ministry_product_id[0]);
-      }
+            // 🔥 important: show main business error
+            if (errors.ministry_product_id?.length) {
+              setError(errors.ministry_product_id[0]);
+            }
 
-      return;
-    }
-  } catch {}
+            return;
+          }
+        } catch {
+          // fall through
+        }
 
-  setError(err.message);
-} else {
+        setError(err.message);
+      } else {
         setError("Failed to publish. Please try again.");
       }
     } finally {

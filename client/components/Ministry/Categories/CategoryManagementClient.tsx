@@ -118,7 +118,7 @@ function CreateModal({ onConfirm, onCancel, isCreating }: CreateModalProps) {
               onConfirm({
                 name: name.trim(),
                 slug: slug.trim(),
-                description: description.trim() || undefined,
+                description: description.trim(),
               })
             }
             className="flex-1 py-2.5 rounded-xl bg-primary text-slate-900 text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"

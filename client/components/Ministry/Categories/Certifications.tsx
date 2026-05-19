@@ -46,12 +46,6 @@ export default function CertificationsPanel({
                 ))}
               </div>
             </div>
-            <button
-              onClick={() => onEdit(cert.id)}
-              className="text-xs font-bold text-primary hover:opacity-75 transition-opacity shrink-0"
-            >
-              Edit
-            </button>
           </div>
         ))}
 

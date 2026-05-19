@@ -581,6 +581,7 @@ class UserDetailView(generics.RetrieveAPIView):
                 'baladiya': profile.baladiya,
                 'farm_size': profile.farm_size,
                 'address': profile.address,
+                'profile_image': profile.profile_image.url if profile.profile_image else None,
                 'documents': {
                     'farmer_card_image': profile.farmer_card_image.url if profile.farmer_card_image else None,
                     'national_id_image': profile.national_id_image.url if profile.national_id_image else None,
@@ -605,6 +606,7 @@ class UserDetailView(generics.RetrieveAPIView):
                     'driver_license_image': profile.driver_license_image.url if profile.driver_license_image else None,
                     'grey_card_image': profile.grey_card_image.url if profile.grey_card_image else None,
                 },
+                'profile_image': profile.profile_image.url if profile.profile_image else None,
                 'validation': {
                     'is_validated': profile.is_validated,
                     'validated_at': profile.validated_at,
@@ -622,6 +624,7 @@ class UserDetailView(generics.RetrieveAPIView):
                 'documents': {
                     'business_license_image': profile.bussiness_license_image.url if profile.bussiness_license_image else None,
                 },
+                'profile_image': profile.profile_image.url if profile.profile_image else None,
                 'validation': {
                     'is_validated': profile.is_validated,
                     'validated_at': profile.validated_at,

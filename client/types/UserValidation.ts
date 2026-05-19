@@ -75,6 +75,7 @@ export interface ApiFarmerProfile {
     farmer_card_image: string;
     national_id_image: string;
   };
+  profile_image : string;
   validation: ApiValidation;
 }
 
@@ -87,6 +88,7 @@ export interface ApiTransporterProfile {
     driver_license_image: string;
     grey_card_image:      string;
   };
+  profile_image : string;
   validation: ApiValidation;
 }
 
@@ -96,6 +98,7 @@ export interface ApiBuyerProfile {
   documents: {
     business_license_image: string;
   };
+  profile_image : string;
   validation: ApiValidation;
 }
 
@@ -107,6 +110,7 @@ export interface ApiUserDetail {
   username:    string;
   phone:       string;
   role:        'FARMER' | 'BUYER' | 'TRANSPORTER';
+  profile_image : string;
   is_verified: boolean;
   is_active:   boolean;
   created_at:  string;
@@ -276,5 +280,4 @@ export const STATIC_VERIFICATION_STEPS: VerificationStep[] = [
   { id: 'phone-email', label: 'Phone & Email Verified',  status: 'complete' },
   { id: 'biometric',   label: 'Biometric Identity Check', status: 'complete' },
   { id: 'ai-registry', label: 'Registry Doc Check (AI)',  status: 'complete' },
-  { id: 'human-audit', label: 'Human Document Audit',     status: 'pending'  },
 ];

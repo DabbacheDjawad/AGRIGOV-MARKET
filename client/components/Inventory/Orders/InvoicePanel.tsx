@@ -21,7 +21,6 @@ interface Props {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 export default function InvoicePanel({ order, isUpdating, onStatusAdvance }: Props) {
-  // ── Local State for Invoice Loader ──
   const [isDownloading, setIsDownloading] = useState(false);
 
   const buyerEmail = parseBuyerEmail(order.buyer);
@@ -73,7 +72,7 @@ export default function InvoicePanel({ order, isUpdating, onStatusAdvance }: Pro
   return (
     <div className="lg:col-span-1">
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 sticky top-24">
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 rounded-t-xl">
           <div>
             <h3 className="text-lg leading-6 font-semibold text-gray-900 dark:text-white">
@@ -88,7 +87,7 @@ export default function InvoicePanel({ order, isUpdating, onStatusAdvance }: Pro
           </span>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <div className="px-6 py-6 space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Status</span>
@@ -107,6 +106,27 @@ export default function InvoicePanel({ order, isUpdating, onStatusAdvance }: Pro
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{buyerEmail}</p>
             </div>
           </div>
+
+          {/* Delivery Info - NEW */}
+          {(order.delivery_wilaya || order.delivery_address) && (
+            <>
+              <hr className="border-gray-100 dark:border-gray-700" />
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-700 dark:text-green-300 shrink-0">
+                  <span className="material-icons text-base">local_shipping</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Delivery Address</p>
+                  {order.delivery_wilaya && (
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{order.delivery_wilaya}</p>
+                  )}
+                  {order.delivery_address && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5 wrap-break-word">{order.delivery_address}</p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
           <hr className="border-gray-100 dark:border-gray-700" />
 
@@ -153,45 +173,26 @@ export default function InvoicePanel({ order, isUpdating, onStatusAdvance }: Pro
             </button>
           )}
 
-          {/* ── Document Actions with Loader ── */}
+          {/* Document Actions */}
           <div className="flex flex-col gap-2">
-<button
-  type="button"
-  disabled={isDownloading}
-  onClick={() => handleDownloadInvoice(order.id)}
-  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold shadow-sm 
-             text-gray-900 bg-primary hover:opacity-90 disabled:opacity-70 transition-all"
->
-  {/* Spinner */}
-  {isDownloading ? (
-    <svg
-      className="w-4 h-4 animate-spin"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z"
-      />
-    </svg>
-  ) : (
-    <span className="material-icons text-base">download</span>
-  )}
-
-  {/* Text */}
-  <span className="whitespace-nowrap">
-    {isDownloading ? "Generating PDF..." : "Download Invoice PDF"}
-  </span>
-</button>
+            <button
+              type="button"
+              disabled={isDownloading}
+              onClick={() => handleDownloadInvoice(order.id)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold shadow-sm text-gray-900 bg-primary hover:opacity-90 disabled:opacity-70 transition-all"
+            >
+              {isDownloading ? (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z" />
+                </svg>
+              ) : (
+                <span className="material-icons text-base">download</span>
+              )}
+              <span className="whitespace-nowrap">
+                {isDownloading ? "Generating PDF..." : "Download Invoice PDF"}
+              </span>
+            </button>
           </div>
 
           <p className="text-center text-xs text-gray-400">

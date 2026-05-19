@@ -204,13 +204,6 @@ export default function PurchaseCard({ product }: Props) {
           View Cart
         </Link>
       </div>
-
-      <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-gray-400">
-        <span className="material-symbols-outlined text-sm text-green-500" style={{ fontVariationSettings: "'FILL' 1" }}>
-          shield
-        </span>
-        Secure Payment via Ministry Escrow
-      </div>
     </div>
   );
 }

@@ -34,20 +34,11 @@ export default function SpecsTabPanel({ product }: Props) {
       {/* Tab bar */}
       <div className="border-b border-neutral-100">
         <nav aria-label="Product detail tabs" className="flex -mb-px px-6">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors first:pl-1 ${
-                activeTab === tab
-                  ? "border-primary text-primary-dark"
-                  : "border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-200"
-              }`}
+            <span
+              className="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors first:pl-1 border-primary text-primary-dark"
             >
-              {tab}
-            </button>
-          ))}
+              Specifications
+            </span>
         </nav>
       </div>
 
@@ -76,32 +67,6 @@ export default function SpecsTabPanel({ product }: Props) {
               <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
             </div>
           </>
-        )}
-
-        {activeTab === "Harvest Details" && (
-          <div className="py-6 text-center text-gray-400 text-sm">
-            <span
-              className="material-symbols-outlined text-4xl mb-3 block text-neutral-300"
-              style={{ fontVariationSettings: "'FILL' 0" }}
-            >
-              eco
-            </span>
-            <p className="font-medium text-neutral-500">Harvest details coming soon.</p>
-            <p className="text-xs mt-1">Season records and field reports will appear here.</p>
-          </div>
-        )}
-
-        {activeTab === "Quality Certificates" && (
-          <div className="py-6 text-center text-gray-400 text-sm">
-            <span
-              className="material-symbols-outlined text-4xl mb-3 block text-neutral-300"
-              style={{ fontVariationSettings: "'FILL' 0" }}
-            >
-              workspace_premium
-            </span>
-            <p className="font-medium text-neutral-500">No certificates attached yet.</p>
-            <p className="text-xs mt-1">Official lab reports will appear here once uploaded.</p>
-          </div>
         )}
       </div>
     </div>

@@ -118,7 +118,7 @@ function handleExportCSV() {
 }
 
   return (
-    <aside className="w-96 bg-white border-l border-neutral-light flex flex-col z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside className="w-full xl:w-96 bg-white xl:border-l border-neutral-light flex max-2xl:hidden flex-col z-10 xl:shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
       {/* Header */}
       <div className="p-6 border-b border-neutral-light bg-white sticky top-0">
         <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">

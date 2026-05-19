@@ -364,9 +364,6 @@ export default function OrderDetailsPage() {
                               {item.product.title}
                             </p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                              <span className="material-symbols-outlined text-sm">
-                                category
-                              </span>
                               {item.product.category_name} • {item.quantity}{" "}
                               {item.quantity > 1 ? "units" : "unit"}
                             </p>

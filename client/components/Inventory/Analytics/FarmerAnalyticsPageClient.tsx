@@ -192,13 +192,11 @@ function StarRating({ rating }: { rating: number }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type Period = "weekly" | "monthly" | "yearly";
 
 export default function FarmerAnalyticsPage() {
   const [data,      setData]      = useState<FarmerDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error,     setError]     = useState<string | null>(null);
-  const [period,    setPeriod]    = useState<Period>("monthly");
 
   useEffect(() => {
     let cancelled = false;
@@ -250,6 +248,7 @@ export default function FarmerAnalyticsPage() {
   const maxSold = Math.max(...topProducts.map((p) => p.total_sold ?? 0), 1);
 
   const { overview } = data ?? {};
+  
   // ── render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
@@ -270,23 +269,6 @@ export default function FarmerAnalyticsPage() {
               <p className="text-slate-500 dark:text-slate-400 mt-1.5 text-sm">
                 Farm performance review &amp; market analysis
               </p>
-            </div>
-
-            {/* Period switcher */}
-            <div className="flex items-center gap-1 bg-white dark:bg-neutral-dark border border-neutral-light dark:border-border-dark p-1.5 rounded-full shadow-sm self-start md:self-auto">
-              {(["weekly", "monthly", "yearly"] as Period[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all capitalize ${
-                    period === p
-                      ? "bg-primary text-slate-900 shadow-sm"
-                      : "text-slate-500 hover:bg-neutral-50 dark:hover:bg-earth-800"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
             </div>
           </header>
 
@@ -601,51 +583,6 @@ export default function FarmerAnalyticsPage() {
                 <span className="material-symbols-outlined text-[18px]">inventory_2</span>
                 Manage Products
               </Link>
-            </div>
-          </section>
-
-          {/* ── Subsidy progress banner ── */}
-          <section className="bg-slate-900 dark:bg-earth-800 rounded-3xl p-8 lg:p-10 text-white relative overflow-hidden shadow-2xl">
-            {/* glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -ml-12 -mb-12 pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="max-w-md">
-                <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  Subsidy Programme
-                </span>
-                <h4 className="text-2xl font-extrabold tracking-tight mb-2">
-                  Subsidy Limit Progress
-                </h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  You have reached 82% of your sustainable farming subsidy cap for
-                  this cycle. Complete 3 more certifications to unlock full benefits.
-                </p>
-              </div>
-
-              <div className="w-full md:w-72 shrink-0">
-                <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  <span>Earned: 820,000 DZD</span>
-                  <span>Limit: 1,000,000 DZD</span>
-                </div>
-                <div className="h-5 w-full bg-white/10 rounded-full p-0.5 shadow-inner">
-                  <div
-                    className="h-full rounded-full bg-primary relative overflow-hidden"
-                    style={{ width: "82%" }}
-                  >
-                    <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
-                  </div>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-2 text-right font-bold">
-                  82% — 180,000 DZD remaining
-                </p>
-              </div>
-
-              <button className="shrink-0 bg-primary text-slate-900 font-black py-3 px-8 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all text-sm uppercase tracking-wider whitespace-nowrap">
-                Claim Grant
-              </button>
             </div>
           </section>
         </div>

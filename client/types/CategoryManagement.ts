@@ -4,6 +4,7 @@ export interface ApiCategory {
   id:   number;
   name: string;
   slug: string;
+  description: string;
 }
 
 export interface CategoriesApiResponse {

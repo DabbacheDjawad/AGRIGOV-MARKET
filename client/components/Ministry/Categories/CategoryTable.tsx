@@ -1,24 +1,27 @@
-import type { ApiCategory } from '@/types/CategoryManagement';
+"use client";
+
+import { useCallback } from "react";
+import type { ApiCategory } from "@/types/CategoryManagement";
 
 interface CategoryTableProps {
   categories: ApiCategory[];
   totalCount: number;
-  page:       number;
-  isLoading:  boolean;
-  onEdit:     (id: number) => void;
-  onDelete:   (id: number) => void;
+  page: number;
+  isLoading: boolean;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
   onPageChange: (page: number) => void;
-  pageSize:   number;
+  pageSize: number;
 }
 
 const PAGE_ICONS: Record<string, string> = {
-  vegetables: 'eco',
-  fruits:     'nutrition',
-  grains:     'grass',
-  tubers:     'potted_plant',
-  dairy:      'water_drop',
-  meat:       'restaurant',
-  legumes:    'spa',
+  vegetables: "eco",
+  fruits: "nutrition",
+  grains: "grass",
+  tubers: "potted_plant",
+  dairy: "water_drop",
+  meat: "restaurant",
+  legumes: "spa",
 };
 
 function guessIcon(name: string): string {
@@ -26,7 +29,7 @@ function guessIcon(name: string): string {
   for (const [k, v] of Object.entries(PAGE_ICONS)) {
     if (key.includes(k)) return v;
   }
-  return 'category';
+  return "category";
 }
 
 function SkeletonRow() {
@@ -35,7 +38,9 @@ function SkeletonRow() {
       {[1, 2, 3, 4].map((i) => (
         <td key={i} className="px-6 py-4">
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
-          {i === 1 && <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded w-1/2 mt-2" />}
+          {i === 1 && (
+            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded w-1/2 mt-2" />
+          )}
         </td>
       ))}
     </tr>
@@ -53,8 +58,33 @@ export default function CategoryTable({
   onPageChange,
 }: CategoryTableProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const start      = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end        = Math.min(page * pageSize, totalCount);
+  const start = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, totalCount);
+
+  // ─── Export CSV ──────────────────────────────────────────────
+  const handleExport = useCallback(() => {
+    if (categories.length === 0) return;
+
+    const headers = ["Name", "Slug", "Description", "Products Count"];
+    const rows = categories.map((cat) => [
+      // Escape fields that may contain commas or double-quotes
+      `"${cat.name.replace(/"/g, '""')}"`,
+      `"${cat.slug.replace(/"/g, '""')}"`,
+      `"${(cat.description ?? "").replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `categories_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [categories]);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -70,14 +100,16 @@ export default function CategoryTable({
           </button>
           <button
             aria-label="Download categories"
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            onClick={handleExport}
+            disabled={categories.length === 0}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-slate-500">download</span>
           </button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table (unchanged) */}
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
@@ -109,7 +141,6 @@ export default function CategoryTable({
                   key={cat.id}
                   className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
                 >
-                  {/* Icon & Name */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -120,20 +151,14 @@ export default function CategoryTable({
                       <span className="font-semibold capitalize">{cat.name}</span>
                     </div>
                   </td>
-
-                  {/* Slug */}
                   <td className="px-6 py-4">
                     <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
                       {cat.slug}
                     </span>
                   </td>
-
-                  {/* ID */}
                   <td className="px-6 py-4 text-slate-400 font-mono text-sm">
                     #{cat.id}
                   </td>
-
-                  {/* Actions */}
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button
@@ -159,12 +184,12 @@ export default function CategoryTable({
         </table>
       </div>
 
-      {/* Footer / Pagination */}
+      {/* Footer / Pagination (unchanged) */}
       <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
         <span className="text-xs text-slate-500 font-medium">
-          Showing <span className="font-bold">{start}–{end}</span> of{' '}
-          <span className="font-bold">{totalCount}</span>{' '}
-          {totalCount === 1 ? 'category' : 'categories'}
+          Showing <span className="font-bold">{start}–{end}</span> of{" "}
+          <span className="font-bold">{totalCount}</span>{" "}
+          {totalCount === 1 ? "category" : "categories"}
         </span>
         <div className="flex gap-1">
           <button

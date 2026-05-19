@@ -161,6 +161,8 @@ export default function UserValidationPage() {
       .then((res) => {
         if (cancelledRef.current) return;
         setUser(res.data.user);
+        console.log(res.data.user);
+        
       })
       .catch((err: unknown) => {
         if (cancelledRef.current) return;
@@ -242,6 +244,7 @@ export default function UserValidationPage() {
           : []),
       ]
     : [];
+    console.log(user);
 
   // ── render: loading / error ────────────────────────────────────────────────
   if (isLoading) {
@@ -308,7 +311,6 @@ export default function UserValidationPage() {
           isRejecting={isRejecting}
         />
       )}
-
       {/* Sidebar */}
       <aside className="hidden lg:flex flex-col h-full w-64 fixed left-0 top-0 z-40 bg-white dark:bg-slate-900 border-r border-primary/10 py-4 pt-20 space-y-2">
         <div className="px-6 mb-8">
@@ -344,7 +346,6 @@ export default function UserValidationPage() {
       {/* Main */}
       <main className=" pb-12 px-6 lg:px-12">
         <div className="max-w-6xl mx-auto">
-
           {/* Action error banner */}
           {actionError && (
             <div
@@ -383,7 +384,13 @@ export default function UserValidationPage() {
               {/* User identity row */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm bg-primary/20 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-3xl">person</span>
+                  <Image
+                    src={user.profile.profile_image || ''}
+                    alt={user.username}
+                    width={64}
+                    height={64}
+                    className="object-cover"
+                  />
                 </div>
                 <div>
                   <h1 className="text-4xl font-extrabold tracking-tight">{user.username}</h1>
@@ -440,6 +447,10 @@ export default function UserValidationPage() {
             <div className="lg:col-span-8 space-y-6">
               <IdentityVerificationCard
                 idCardUrl={idCardUrl}
+                businessLicenseUrl={user.profile.type === 'buyer' ? user.profile.documents.business_license_image : undefined}
+                greyCardUrl={user.profile.type === 'transporter' ? user.profile.documents.grey_card_image : undefined}
+                role={user?.role}
+                farmerCardUrl={user.profile.type === 'farmer' ? user.profile.documents.farmer_card_image : ''}
                 details={identityDetails}
                 selfieVerified={user.is_verified}
                 onViewFullScreen={() => window.open(idCardUrl, '_blank', 'noopener,noreferrer')}

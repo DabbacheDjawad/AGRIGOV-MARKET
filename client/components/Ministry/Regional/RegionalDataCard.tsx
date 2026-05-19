@@ -1,18 +1,82 @@
 import type { RegionDetail } from "@/types/Regional";
 
 interface Props {
-  region:  RegionDetail;
+  region: RegionDetail;
   onClose: () => void;
+  mobile?: boolean;
 }
 
-export default function RegionDataCard({ region, onClose }: Props) {
+export default function RegionDataCard({ region, onClose, mobile }: Props) {
   const revenueFormatted = region.revenue.toLocaleString("fr-DZ", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   });
 
+ if (mobile) {
+    return (
+      <div className="w-[90%] bg-white rounded-t-2xl shadow-2xl border-t border-slate-100 z-20 overflow-hidden max-h-[60vh] overflow-y-auto">
+        {/* drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-slate-200 rounded-full" />
+        </div>
+        {/* Same header + body as desktop, but full-width */}
+        <div className="bg-slate-900 text-white px-4 py-3 flex justify-between items-start">
+          <div>
+            <h3 className="font-bold text-base">{region.name} Region</h3>
+            <p className="text-xs text-primary font-medium mt-0.5">{region.wilayas.length} wilayas</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-white transition-colors" aria-label="Close">
+            <span className="material-icons text-sm">close</span>
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          {/* identical body content */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* KPIs in 3-col on mobile for compactness */}
+            {[
+              { label: "Farmers", value: `${region.totalFarmers}`, sub: `${region.activeFarmers} active` },
+              { label: "Buyers", value: `${region.buyers}` },
+              { label: "Orders", value: `${region.totalOrders}` },
+              { label: "Revenue", value: revenueFormatted, sub: "DZD" },
+              { label: "Transporters", value: `${region.transporters}` },
+              { label: "Active Prices", value: `${region.activePrices}` },
+            ].map((kpi) => (
+              <div key={kpi.label}>
+                <p className="text-[10px] text-slate-500 font-bold uppercase mb-0.5">{kpi.label}</p>
+                <p className="text-base font-bold text-slate-800">{kpi.value}</p>
+                {kpi.sub && <p className="text-[10px] text-slate-400">{kpi.sub}</p>}
+              </div>
+            ))}
+          </div>
+
+          {region.topProducts.length > 0 && (
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-[10px] text-slate-500 font-bold uppercase mb-2">Top Products</p>
+              <div className="flex flex-wrap gap-2">
+                {region.topProducts.map((p) => (
+                  <span key={p.id} className="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 rounded text-xs font-semibold text-slate-700">
+                    <span className="material-icons text-[14px] text-primary">eco</span>
+                    {p.name}
+                    {p.sold != null && <span className="text-slate-400">·{p.sold}</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="w-full bg-primary text-slate-900 font-bold py-2.5 rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all"
+          >
+            View Detailed Report
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="absolute top-1/2 left-1/2 translate-x-12 -translate-y-24 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 z-20 overflow-hidden">
+    <div className="absolute max-xl:-translate-y-10 max-xl:-translate-x-10  max-xl:w-60  top-1/2 left-1/2 translate-x-12 -translate-y-24 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 z-20 overflow-hidden">
       {/* Dark header */}
       <div className="bg-slate-900 text-white p-4 rounded-t-xl flex justify-between items-start">
         <div>
@@ -99,13 +163,6 @@ export default function RegionDataCard({ region, onClose }: Props) {
             )}
           </p>
         </div>
-
-        <button
-          type="button"
-          className="w-full mt-1 bg-primary text-slate-900 font-bold py-2 rounded-lg text-sm hover:opacity-90 active:scale-95 transition-all"
-        >
-          View Detailed Report
-        </button>
       </div>
     </div>
   );

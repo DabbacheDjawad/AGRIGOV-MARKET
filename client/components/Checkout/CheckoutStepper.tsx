@@ -22,7 +22,7 @@ export default function CheckoutStepper() {
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 font-bold ${
-                step.state === "active"   ? "bg-black text-primary border-2 border-primary" :
+                step.state === "active"   ? "bg-white text-primary border-2 border-primary" :
                 step.state === "done"     ? "bg-primary text-black" :
                                            "border border-gray-300 text-gray-400"
               }`}

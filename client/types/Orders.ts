@@ -31,6 +31,8 @@ export interface ApiOrder {
   created_at:       string;   // ISO 8601
   items:            ApiOrderItem[];
   allowed_statuses: ApiOrderStatus[];  // actions this farmer can take
+    delivery_wilaya?: string;
+  delivery_address?: string;
 }
 
 export interface OrdersApiResponse {

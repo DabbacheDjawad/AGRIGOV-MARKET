@@ -46,13 +46,6 @@ export default function QualityStandardsPanel({
                   <p className="text-[11px] text-slate-500">{std.description}</p>
                 </div>
               </div>
-              <button
-                aria-label={`Configure ${std.name}`}
-                onClick={() => onConfigureStandard(std.id)}
-                className="text-slate-400 hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined">settings_suggest</span>
-              </button>
             </div>
           );
         })}
@@ -63,15 +56,6 @@ export default function QualityStandardsPanel({
             No standards defined yet.
           </p>
         )}
-
-        {/* Add New Standard */}
-        <button
-          onClick={onAddStandard}
-          className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 text-sm font-bold flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all"
-        >
-          <span className="material-symbols-outlined">add</span>
-          Add New Standard
-        </button>
       </div>
     </div>
   );

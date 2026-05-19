@@ -88,7 +88,8 @@ export default function CommodityTable({
 }: Props) {
   const [search,      setSearch]      = useState("");
   const [isExporting, setIsExporting] = useState(false);
-
+  console.log(page);
+  
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     if (!q) return items;

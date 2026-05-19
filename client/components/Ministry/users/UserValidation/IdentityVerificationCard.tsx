@@ -1,15 +1,23 @@
-import Image from 'next/image';
-import type { IdentityDetail } from '@/types/UserValidation';
+import Image from "next/image";
+import type { IdentityDetail } from "@/types/UserValidation";
 
 interface IdentityVerificationCardProps {
-  idCardUrl:      string;
-  details:        IdentityDetail[];
+  idCardUrl: string;
+  farmerCardUrl: string;
+  greyCardUrl?: string;
+  businessLicenseUrl?: string;
+  role: "FARMER" | "BUYER" | "TRANSPORTER";
+  details: IdentityDetail[];
   selfieVerified: boolean;
   onViewFullScreen: () => void;
 }
 
 export default function IdentityVerificationCard({
   idCardUrl,
+  role,
+  farmerCardUrl,
+  businessLicenseUrl,
+  greyCardUrl,
   details,
   selfieVerified,
   onViewFullScreen,
@@ -18,7 +26,9 @@ export default function IdentityVerificationCard({
     <div className="bg-background-light dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-primary/10">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">fingerprint</span>
+          <span className="material-symbols-outlined text-primary">
+            fingerprint
+          </span>
           Identity Verification
         </h3>
         {selfieVerified && (
@@ -29,29 +39,122 @@ export default function IdentityVerificationCard({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* ID card image */}
-        <div className="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-video border border-primary/10">
-          <Image
-            src={idCardUrl}
-            alt="Government-issued photo identification card"
-            fill
-            sizes="(min-width: 1024px) 30vw, 50vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
-          />
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={onViewFullScreen}
-              className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
-            >
-              <span className="material-symbols-outlined text-sm">fullscreen</span>
-              View Full Screen
-            </button>
-          </div>
-          {/* Label chip */}
-          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-lg uppercase">
-            National ID
-          </div>
+        {/* Left Column: Image Stack */}
+        <div className="flex flex-col gap-4">
+          {/* ID card image */}
+          {role && (role === "FARMER" || role === "TRANSPORTER") && (
+            <div className="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-video border border-primary/10">
+              <Image
+                src={idCardUrl}
+                alt="Government-issued photo identification card"
+                fill
+                sizes="(min-width: 1024px) 30vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={onViewFullScreen}
+                  className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    fullscreen
+                  </span>
+                  View Full Screen
+                </button>
+              </div>
+              {/* Label chip */}
+              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-lg uppercase">
+                National ID
+              </div>
+            </div>
+          )}
+
+          {/* Farmer card image */}
+          {role && role === "FARMER" && (
+            <div className="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-video border border-primary/10">
+              <Image
+                src={farmerCardUrl}
+                alt="Farmer identification card"
+                fill
+                sizes="(min-width: 1024px) 30vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={onViewFullScreen}
+                  className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    fullscreen
+                  </span>
+                  View Full Screen
+                </button>
+              </div>
+              {/* Label chip */}
+              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-lg uppercase">
+                Farmer ID
+              </div>
+            </div>
+          )}
+
+          {/* Farmer card image */}
+          {role && role === "TRANSPORTER" && (
+            <div className="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-video border border-primary/10">
+              <Image
+                src={greyCardUrl || ""}
+                alt="Vehicle registration certificate"
+                fill
+                sizes="(min-width: 1024px) 30vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={onViewFullScreen}
+                  className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    fullscreen
+                  </span>
+                  View Full Screen
+                </button>
+              </div>
+              {/* Label chip */}
+              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-lg uppercase">
+                Vehicle Registration
+              </div>
+            </div>
+          )}
+
+          {role && role === "BUYER" && (
+            <div className="group relative overflow-hidden rounded-2xl bg-slate-200 dark:bg-slate-700 aspect-video border border-primary/10">
+              <Image
+                src={businessLicenseUrl || ""}
+                alt="Business license"
+                fill
+                sizes="(min-width: 1024px) 30vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={onViewFullScreen}
+                  className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    fullscreen
+                  </span>
+                  View Full Screen
+                </button>
+              </div>
+              {/* Label chip */}
+              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-lg uppercase">
+                Business License
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Details panel */}
@@ -61,7 +164,9 @@ export default function IdentityVerificationCard({
               <label className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">
                 {d.label}
               </label>
-              <p className="font-semibold text-slate-900 dark:text-slate-100">{d.value}</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">
+                {d.value}
+              </p>
             </div>
           ))}
         </div>

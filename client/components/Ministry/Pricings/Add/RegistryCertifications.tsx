@@ -1,13 +1,11 @@
 interface RegistryCertificationCardProps {
   officialName:   string;
   signatureKey:   string;
-  liveMarketActive: boolean;
 }
 
 export default function RegistryCertificationCard({
   officialName,
   signatureKey,
-  liveMarketActive,
 }: RegistryCertificationCardProps) {
   return (
     <>
@@ -42,26 +40,6 @@ export default function RegistryCertificationCard({
             <code className="text-xs font-mono opacity-70">{signatureKey}</code>
           </div>
         </div>
-      </div>
-
-      {/* Status pill */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 flex items-center justify-between border border-primary/10 shadow-sm">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
-            Index Status
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                liveMarketActive ? 'bg-primary animate-pulse' : 'bg-slate-400'
-              }`}
-            />
-            <span className="font-bold text-slate-900 dark:text-slate-100">
-              {liveMarketActive ? 'Live Market Feed Active' : 'Market Feed Inactive'}
-            </span>
-          </div>
-        </div>
-        <span className="material-symbols-outlined text-slate-400">monitoring</span>
       </div>
     </>
   );

@@ -357,7 +357,7 @@ export default function MinistryDashboardPage() {
                     <RegionBar
                       key={r}
                       label={r}
-                      value={regionStats[r].farmers.total}
+                      value={regionStats[r]?.farmers.total}
                       max={maxFarmers}
                     />
                   ))}
@@ -377,7 +377,7 @@ export default function MinistryDashboardPage() {
                         {r}
                       </p>
                       <p className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
-                        {regionStats[r].farmers.active}
+                        {regionStats[r]?.farmers.active}
                       </p>
                       <p className="text-[10px] text-slate-400">
                         active farmers
